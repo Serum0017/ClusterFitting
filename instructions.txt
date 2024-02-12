@@ -1,6 +1,6 @@
 here's instructions explaining how to run & edit these files!
 
-1. Install node.js and npm.
+1. Install node.js, npm, and python
 2. Clone this repo through github. You probably want to install github desktop.
 3. Open command prompt.
 3. Navigate to the folder where this project lives on your pc. 
