@@ -1,0 +1,16 @@
+here's instructions explaining how to run & edit these files!
+
+1. Install node.js and npm.
+2. Clone this repo through github. You probably want to install github desktop.
+3. Open command prompt.
+3. Navigate to the folder where this project lives on your pc. 
+    - If you're on windows. use cd [directory] (e.g. cd onedrive) to navigate inside a directory. Keep cd'ing until you get to the right directory.
+        - Example: 
+            cd onedrive
+            cd documents
+            cd github
+            cd ClusterFitting
+4. type npm start to run the program and you should get output "I called python up. They said:  { result: 6 }" and the file screenshot.png should also be modified. 
+5. ctrl c to stop execution. To edit the code, open up the file in vscode or some other IDE, change the text, and then save. Once saved, restart the program by ctrl c'ing in the command prompt and then typing npm start
+6. Once you have some progress that you'd like to save and share with the team, go to github desktop and commit your changes (bottom left corner).
+    - You should see the changes in ghd, too, so if you don't, that's a sign that you probably edited the wrong directory or didn't save your changes.
