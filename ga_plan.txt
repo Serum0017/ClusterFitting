@@ -20,3 +20,15 @@ Probe
 - before running algo, we delete pulsators and white dwarfs from the dataset. Someone will need to fill me in on the specific research before i can implement this
 
 Lets do it!
+
+Problem: The ga sucks.
+
+Tried:
+- exclusion zone (red)
+- exclusion angle
+
+Want to try: 
+- getting highest density from 1 GA, and either
+    - taking a bite out of the graph
+    - penalizing the algorithm if it's in the same region that the previous GA landed on
+- NN to determine the parameters? Probably not, would be too much of a hassle and the NN would have its own parameters lol
