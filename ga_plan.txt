@@ -1,0 +1,22 @@
+ok so basically this is how stuff is going to work
+This doc isn't meant to be comprehensible by anyone except me, but for anyone else looking at it, it's supposed to be a very technical description of how the GA will work.
+
+Prune
+
+- 330 arcseconds is about the max that a cluster can take up.
+- delta density of oval w/ r 0.5 vs radius 1
+- open/ glob clusters both exist, so there shouldn't be an assumed distribution. We should just measure density.
+
+Probe
+
+- generate isochrone fit curves as points
+- spatial hash? (optimization to do later if time)
+    - if we do use, then start with a sphere of radius 1. If there are no points, then double, until there are points. Then, once points are found, linearly search to find the best one.
+        - without sp hash ofc we could linearly search for all points but that would be slow af and we're doing this a lot.
+    - sp hash should only hash isochrone points, for lookup.
+        - or maybe if its faster we can hash stars once (since they aren't changing) and then lookup stars from the isochrone??
+- fitness function should be something like ((pointsIncluded / totalPts) ** 0.6) * avgPointFitness or some fancy stats instead of an average (maybe weighted avg)
+
+- before running algo, we delete pulsators and white dwarfs from the dataset. Someone will need to fill me in on the specific research before i can implement this
+
+Lets do it!

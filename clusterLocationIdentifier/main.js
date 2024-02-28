@@ -41,7 +41,7 @@ function render(){
     ctx.fillStyle = 'white';
     ctx.fillRect(0,0,canvas.width,canvas.height);
 
-    ctx.globalAlpha = 0.1;
+    ctx.globalAlpha = 0.01;
     ctx.fillStyle = '#006db7';
     for(let i = 0; i < points.length; i++){
         ctx.beginPath();
@@ -49,17 +49,25 @@ function render(){
         ctx.fill();
         ctx.closePath();
     }
-    ctx.globalAlpha = 1;
-
-    ctx.strokeStyle = '#ad9efb';
+    
     ctx.lineWidth = 2;
+    ctx.globalAlpha = 0.3;
     for(let i = 0; i < GA.population.length; i++){
         const p = GA.population[i];
+        ctx.strokeStyle = '#ad9efb';
         ctx.beginPath();
         ctx.ellipse(XToScreen(p.x) + canvas.width / 2, YToScreen(p.y) + canvas.height / 2, XToScreen(p.radiusX), YToScreen(p.radiusY), 0, 0, Math.PI * 2);
         ctx.stroke();
         ctx.closePath();
+
+        ctx.strokeStyle = '#fb9e9e';
+        ctx.beginPath();
+        ctx.ellipse(XToScreen(p.x) + canvas.width / 2, YToScreen(p.y) + canvas.height / 2, XToScreen(p.radiusX) + SETTINGS.bigSizeAdd, YToScreen(p.radiusY) + SETTINGS.bigSizeAdd, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.closePath();
     }
+
+    ctx.globalAlpha = 1;
 }
 
 function XToScreen(x){
