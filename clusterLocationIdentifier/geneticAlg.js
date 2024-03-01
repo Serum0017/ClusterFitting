@@ -9,8 +9,12 @@ const SETTINGS = Object.freeze({
 
     // mutation
     mutationDecay: 0.9995,
-    travelDistance: 24 / 100,
+    travelDistance: 60 / 100,
     sizeDif: 25 / 100,
+
+    // local minima prevention
+    bigTravelChance: 0.01,
+    bigTravelDist: 500 / 100,
 })
 let decay = 1;
 
@@ -80,7 +84,7 @@ class Guess {
         }
 
         const randomAngle = Math.PI * Math.random() * 2;
-        const mag = SETTINGS.travelDistance * decay * Math.random();//* (decay < 0.1 ? (Math.random() ** 2) : Math.random());
+        const mag = Math.random() < SETTINGS.bigTravelChance ? SETTINGS.bigTravelDist * Math.random() : SETTINGS.travelDistance * decay * Math.random();//* (decay < 0.1 ? (Math.random() ** 2) : Math.random());
 
         this.x = parent.x + Math.cos(randomAngle) * mag;
         this.y = parent.y + Math.sin(randomAngle) * mag;
