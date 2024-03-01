@@ -139,3 +139,7 @@ window.onmousedown = (e) => {
         console.log('best fit found:', GA.getBestData());
     }
 }
+
+window.oncontextmenu = (e) => {
+    return e.preventDefault();
+}
