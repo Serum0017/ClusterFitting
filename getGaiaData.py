@@ -69,7 +69,7 @@ targets = { "NGC 2264": SkyCoord('06h41m00s', '+09d53m00s', frame='icrs'),
             "NGC 6325": SkyCoord('17h17m59.27s', '−23d45m57.7s', frame='icrs')
           }
 
-target = "NGC 2264"
+target = "NGC 6325"
 coord = targets[target]
 # num_stars, source = get_Gaia_data(coord)
 

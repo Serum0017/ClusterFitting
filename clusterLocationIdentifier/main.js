@@ -1,6 +1,9 @@
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
+const pointsCanvas = document.getElementById('pointsCanvas');
+const ptx = pointsCanvas.getContext('2d');
+
 // resizing canvas
 function resize(){ 
     let scale = window.innerWidth / canvas.width;
@@ -8,9 +11,9 @@ function resize(){
         scale = window.innerHeight / canvas.height;
     }
 
-    canvas.style.transform = `scale(${scale})`;
-    canvas.style.left = (window.innerWidth - canvas.width) / 2 + "px";
-    canvas.style.top =  (window.innerHeight - canvas.height) / 2 +"px";
+    pointsCanvas.style.transform = canvas.style.transform = `scale(${scale})`;
+    pointsCanvas.style.left = canvas.style.left = (window.innerWidth - canvas.width) / 2 + "px";
+    pointsCanvas.style.top = canvas.style.top =  (window.innerHeight - canvas.height) / 2 +"px";
 
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -37,18 +40,22 @@ resize();
 //     }
 // }
 
-function render(){
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0,0,canvas.width,canvas.height);
+function renderPoints(){
+    ptx.fillStyle = 'white';
+    ptx.fillRect(0,0,canvas.width,canvas.height);
 
-    ctx.globalAlpha = 0.01;
-    ctx.fillStyle = '#006db7';
+    ptx.globalAlpha = 0.01;
+    ptx.fillStyle = '#006db7';
     for(let i = 0; i < points.length; i++){
-        ctx.beginPath();
-        ctx.arc(XToScreen(points[i].x) + canvas.width / 2, YToScreen(points[i].y) + canvas.height / 2, 18/*12*/, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.closePath();
+        ptx.beginPath();
+        ptx.arc(XToScreen(points[i].x) + canvas.width / 2, YToScreen(points[i].y) + canvas.height / 2, 18/*12*/, 0, Math.PI * 2);
+        ptx.fill();
+        ptx.closePath();
     }
+}
+
+function render(){
+    ctx.clearRect(0,0,canvas.width, canvas.height);
     
     ctx.lineWidth = 2;
     ctx.globalAlpha = 0.3;
@@ -56,14 +63,14 @@ function render(){
         let p = GA.populationA[i];
         ctx.strokeStyle = '#ad9efb';
         ctx.beginPath();
-        ctx.ellipse(XToScreen(p.x) + canvas.width / 2, YToScreen(p.y) + canvas.height / 2, XToScreen(p.radiusX), YToScreen(p.radiusY), 0, 0, Math.PI * 2);
+        ctx.ellipse(XToScreen(p.x) + canvas.width / 2, YToScreen(p.y) + canvas.height / 2, XToMag(p.radiusX), YToMag(p.radiusY), 0, 0, Math.PI * 2);
         ctx.stroke();
         ctx.closePath();
 
         p = GA.populationB[i];
         ctx.strokeStyle = '#fb9e9e';
         ctx.beginPath();
-        ctx.ellipse(XToScreen(p.x) + canvas.width / 2, YToScreen(p.y) + canvas.height / 2, XToScreen(p.radiusX), YToScreen(p.radiusY), 0, 0, Math.PI * 2);
+        ctx.ellipse(XToScreen(p.x) + canvas.width / 2, YToScreen(p.y) + canvas.height / 2, XToMag(p.radiusX), YToMag(p.radiusY), 0, 0, Math.PI * 2);
         ctx.stroke();
         ctx.closePath();
     }
@@ -71,12 +78,22 @@ function render(){
     ctx.globalAlpha = 1;
 }
 
+let maxX = -Infinity, maxY = -Infinity, minX = Infinity, minY = Infinity;
 function XToScreen(x){
-    return x / 30 * canvas.width;
+    return ((x - minX) / (maxX - minX) - 0.5) * canvas.width;
+}
+
+// just for scaling something to a magnitude, without an offset. Used for ellipse radii
+function XToMag(x){
+    return x / (maxX - minX) * canvas.width;
 }
 
 function YToScreen(y){
-    return y / 30 * canvas.height;
+    return ((y - minY) / (maxY - minY) - 0.5) * canvas.height;
+}
+
+function YToMag(y){
+    return y / (maxY - minY) * canvas.height;
 }
 
 const points = [];
@@ -85,11 +102,40 @@ for(let i = 0; i < gaiaData[0].length; i++){
         x: gaiaData[0][i],
         y: gaiaData[1][i]
     });
+    const pt = points[points.length-1];
+    if(pt.x < minX) minX = pt.x;
+    if(pt.x > maxX) maxX = pt.x;
+    if(pt.y < minY) minY = pt.y;
+    if(pt.y > maxY) maxY = pt.y;
 }
-const GA = new GeneticAlgorithmn(points);
 
-(function run(){
+let GA = new GeneticAlgorithmn(points);
+
+renderPoints();
+
+let running = true;
+
+function run(){
+    if(running === false) return;
     GA.runGeneration();
     render();
     requestAnimationFrame(run);
-})();
+}
+
+run();
+
+window.onmousedown = (e) => {
+    // right click
+    if(e.which === 3 || e.button === 2) { 
+        GA = new GeneticAlgorithmn(points);
+        decay = 1;
+        return e.preventDefault();
+    }
+    running = !running;
+    if(running === true){
+        run();
+    } else {
+        // export data
+        console.log('best fit found:', GA.getBestData());
+    }
+}

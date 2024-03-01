@@ -1,6 +1,6 @@
 const SETTINGS = Object.freeze({
     // general
-    populationSize: 100,
+    populationSize: 10,//0,
     selectionGradient: 1,
     minStartingSize: 10 / 100,
     maxStartingSize: 20 / 100,
@@ -13,8 +13,18 @@ const SETTINGS = Object.freeze({
     sizeDif: 25 / 100,
 
     // local minima prevention
-    bigTravelChance: 0.01,
-    bigTravelDist: 500 / 100,
+    bigTravelChance: 0.03,
+    bigTravelDist: 5000 / 100,
+
+    maxClusterSize: 100 / 100,
+    purpleTravelDistMult: 300 / 100,
+
+    // how much density vs spread should be weighted. 1 = we only care about density, 10 = we care a lot more about the amount of points within
+    purpleDensityValuePower: 2,
+    redDensityValuePower: 5,
+
+    // exporting
+    clusterSizeAdd: 20
 })
 let decay = 1;
 
@@ -23,14 +33,15 @@ class GeneticAlgorithmn {
     constructor(points=[{x:0,y:0}]){
         this.points = points;
 
+        // a - purple, b - red
         this.populationA = new Array(SETTINGS.populationSize);
         for(let i = 0; i < this.populationA.length; i++){
-            this.populationA[i] = new Guess(points);
+            this.populationA[i] = new Guess(points, true);
         }
 
         this.populationB = new Array(SETTINGS.populationSize);
         for(let i = 0; i < this.populationB.length; i++){
-            this.populationB[i] = new Guess(points);
+            this.populationB[i] = new Guess(points, false);
         }
     }
     runGeneration(){
@@ -63,18 +74,62 @@ class GeneticAlgorithmn {
 
         while(this.populationA.length < SETTINGS.populationSize){
             // regenerate based on a random parent
-            this.populationA.push(new Guess(this.points, this.populationA[Math.floor(this.populationA.length * Math.random())] ));
-            this.populationB.push(new Guess(this.points, this.populationB[Math.floor(this.populationB.length * Math.random())] ));
+            this.populationA.push(new Guess(this.points, true, this.populationA[Math.floor(this.populationA.length * Math.random())] ));
+            this.populationB.push(new Guess(this.points, false, this.populationB[Math.floor(this.populationB.length * Math.random())] ));
         }
 
         decay *= SETTINGS.mutationDecay;
     }
+    getBestData(){
+        const populationA = this.populationA, populationB = this.populationB;
+
+        // smaller population is assumed to be the one that has the cluster
+        let smallestPopulation = populationA;
+        if(
+            populationA[0].radiusX * populationA[0].radiusY + populationA[1].radiusX * populationA[1].radiusY + populationA[2].radiusX * populationA[2].radiusY >
+            populationB[0].radiusX * populationB[0].radiusY + populationB[1].radiusX * populationB[1].radiusY + populationB[2].radiusX * populationB[2].radiusY
+        ) {
+            smallestPopulation = populationB;
+        }
+
+        let bestFitness = -1;
+        let bestIndex = null;
+        for(let i = 0; i < smallestPopulation.length; i++){
+            if(smallestPopulation[i].fitness === undefined) smallestPopulation[i].fitness = smallestPopulation[i].calculateFitness(this.points, []);
+            if(smallestPopulation[i].fitness > bestFitness){
+                bestFitness = smallestPopulation[i].fitness;
+                bestIndex = i;
+            }
+        }
+
+        const bestAgent = smallestPopulation[bestIndex];
+
+        // include a bit more just for safety
+        bestAgent.radiusX += SETTINGS.clusterSizeAdd;
+        bestAgent.radiusY += SETTINGS.clusterSizeAdd;
+
+        const pointsIn = [];
+        for(let i = 0; i < this.points.length; i++){
+            if(bestAgent.contains(this.points[i]) === true){
+                pointsIn.push({ra: this.points[i].x, dec: this.points[i].y});
+            }
+        }
+
+        bestAgent.radiusX -= SETTINGS.clusterSizeAdd;
+        bestAgent.radiusY -= SETTINGS.clusterSizeAdd;
+
+        return {
+            color: smallestPopulation === this.populationA ? 'purple' : 'red',
+            clusterPoints: pointsIn,
+            bestAgent
+        }
+    }
 }
 
 class Guess {
-    constructor(points, parent=undefined){
+    constructor(points, isPurple, parent=undefined){
         if(parent === undefined){
-            return new Guess(points, {
+            return new Guess(points, isPurple, {
                 x: 15 + Math.random() * -30,//canvas.width,
                 y: -15 + Math.random() * 30,//canvas.height,
                 radiusX: interpolate(SETTINGS.minStartingSize, SETTINGS.maxStartingSize, Math.random()),
@@ -84,7 +139,7 @@ class Guess {
         }
 
         const randomAngle = Math.PI * Math.random() * 2;
-        const mag = Math.random() < SETTINGS.bigTravelChance ? SETTINGS.bigTravelDist * Math.random() : SETTINGS.travelDistance * decay * Math.random();//* (decay < 0.1 ? (Math.random() ** 2) : Math.random());
+        const mag = (isPurple && Math.random() < SETTINGS.bigTravelChance) ? SETTINGS.bigTravelDist * Math.random() : SETTINGS.travelDistance * (isPurple ? SETTINGS.purpleTravelDistMult : 1) * decay * Math.random();//* (decay < 0.1 ? (Math.random() ** 2) : Math.random());
 
         this.x = parent.x + Math.cos(randomAngle) * mag;
         this.y = parent.y + Math.sin(randomAngle) * mag;
@@ -92,6 +147,13 @@ class Guess {
         // hmm we may want to have size change less when the parent size is smaller and we may have 1000 other clever improvements
         this.radiusX = Math.max(SETTINGS.minStartingSize, parent.radiusX + (Math.random()*2-1) * SETTINGS.sizeDif * decay);
         this.radiusY = Math.max(SETTINGS.minStartingSize, parent.radiusY + (Math.random()*2-1) * SETTINGS.sizeDif * decay);
+
+        if(isPurple === true){
+            if(this.radiusX > SETTINGS.maxClusterSize) this.radiusX = SETTINGS.maxClusterSize;
+            if(this.radiusY > SETTINGS.maxClusterSize) this.radiusY = SETTINGS.maxClusterSize;
+        }
+        this.isPurple = isPurple;
+        
 
         // approximate oval with polygon
         this.sat = this.generateSAT();
@@ -116,7 +178,7 @@ class Guess {
             if(this.containsOther(enemyPopulation[i]) === true) enemiesWithin++;
         }
 
-        return pointsWithin ** 2 / (this.radiusX * this.radiusY) / (enemiesWithin + 1);
+        return enemiesWithin !== 0 ? -Infinity : pointsWithin ** (this.isPurple ? SETTINGS.purpleDensityValuePower : SETTINGS.redDensityValuePower) / (this.radiusX * this.radiusY);
     }
     // calculateFitness(points){
     //     // fitness is about the number of points within the ellipse
