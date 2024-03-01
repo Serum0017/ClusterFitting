@@ -52,17 +52,18 @@ function render(){
     
     ctx.lineWidth = 2;
     ctx.globalAlpha = 0.3;
-    for(let i = 0; i < GA.population.length; i++){
-        const p = GA.population[i];
+    for(let i = 0; i < GA.populationA.length; i++){
+        let p = GA.populationA[i];
         ctx.strokeStyle = '#ad9efb';
         ctx.beginPath();
         ctx.ellipse(XToScreen(p.x) + canvas.width / 2, YToScreen(p.y) + canvas.height / 2, XToScreen(p.radiusX), YToScreen(p.radiusY), 0, 0, Math.PI * 2);
         ctx.stroke();
         ctx.closePath();
 
+        p = GA.populationB[i];
         ctx.strokeStyle = '#fb9e9e';
         ctx.beginPath();
-        ctx.ellipse(XToScreen(p.x) + canvas.width / 2, YToScreen(p.y) + canvas.height / 2, XToScreen(p.radiusX) + SETTINGS.bigSizeAdd, YToScreen(p.radiusY) + SETTINGS.bigSizeAdd, 0, 0, Math.PI * 2);
+        ctx.ellipse(XToScreen(p.x) + canvas.width / 2, YToScreen(p.y) + canvas.height / 2, XToScreen(p.radiusX), YToScreen(p.radiusY), 0, 0, Math.PI * 2);
         ctx.stroke();
         ctx.closePath();
     }
