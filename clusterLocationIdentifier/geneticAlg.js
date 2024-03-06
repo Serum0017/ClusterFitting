@@ -16,12 +16,12 @@ const SETTINGS = Object.freeze({
     bigTravelChance: 0.03,
     bigTravelDist: 5000 / 100,
 
-    maxClusterSize: 100 / 100,
+    maxClusterSize: 60 / 100,
     purpleTravelDistMult: 300 / 100,
 
     // how much density vs spread should be weighted. 1 = we only care about density, 10 = we care a lot more about the amount of points within
     purpleDensityValuePower: 2,
-    redDensityValuePower: 1.8,
+    redDensityValuePower: 1.3,
 
     // exporting
     clusterSizeAdd: 20

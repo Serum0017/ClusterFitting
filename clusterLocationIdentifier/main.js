@@ -44,7 +44,7 @@ function renderPoints(){
     ptx.fillStyle = 'white';
     ptx.fillRect(0,0,canvas.width,canvas.height);
 
-    ptx.globalAlpha = 0.01;
+    ptx.globalAlpha = 0.01//0.04;
     ptx.fillStyle = '#006db7';
     for(let i = 0; i < points.length; i++){
         ptx.beginPath();
@@ -68,7 +68,7 @@ function renderPoints(){
     ptx.stroke();
     ptx.closePath();
 
-    ptx.font = "24px Inter";
+    ptx.font = "18px Inter";
     ptx.textAlign = 'center';
     ptx.textBaseline = 'middle';
     ptx.fillStyle = 'black';
@@ -81,7 +81,7 @@ function renderPoints(){
         ptx.stroke();
         ptx.closePath();
 
-        ptx.fillText(x.toString(), x, canvas.height - linePadding * 0.4);
+        ptx.fillText(interpolate(minX, maxX, x / canvas.width).toFixed(2), x, canvas.height - linePadding * 0.4);
     }
 
     for(let y = linePadding * 1.1; y <= canvas.height - linePadding; y += axisSize){
@@ -93,13 +93,18 @@ function renderPoints(){
 
         ptx.translate(linePadding * 0.4, y);
         // ptx.rotate(Math.PI / 2);
-        ptx.fillText(y.toString(), 0, 0);
+        ptx.fillText(interpolate(minY, maxY, y / canvas.height).toFixed(2), 0, 0);
         // ptx.rotate(-Math.PI / 2);
         ptx.translate(-linePadding * 0.4, -y);
     }
 
-    ptx.fillText('RA', canvas.width - linePadding * 0.5, canvas.height - linePadding);
-    ptx.fillText('DEC', linePadding, linePadding * 0.5);
+    ptx.translate(canvas.width - linePadding * 0.5, canvas.height - linePadding);
+    ptx.rotate(Math.PI / 2);
+    ptx.fillText('RA (mas/yr)', 0, 0);
+    ptx.rotate(-Math.PI / 2);
+    ptx.translate(-(canvas.width - linePadding * 0.5), -(canvas.height - linePadding));
+
+    ptx.fillText('DEC (mas/yr)', linePadding, linePadding * 0.5);
 
     // triangles
     ptx.beginPath();
@@ -171,6 +176,16 @@ for(let i = 0; i < gaiaData[0].length; i++){
     if(pt.y < minY) minY = pt.y;
     if(pt.y > maxY) maxY = pt.y;
 }
+
+// for zooming in 2x
+// const avgX = (minX + maxX) / 2;
+// const avgY = (minY + maxY) / 2;
+
+// minX = interpolate(minX, avgX, 0.5);
+// minY = interpolate(minY, avgY, 0.5);
+
+// maxX = interpolate(maxX, avgX, 0.5);
+// maxY = interpolate(maxY, avgY, 0.5);
 
 let GA = new GeneticAlgorithmn(points);
 
