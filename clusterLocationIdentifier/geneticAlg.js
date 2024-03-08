@@ -2,29 +2,63 @@ const SETTINGS = Object.freeze({
     // general
     populationSize: 10,//0,
     selectionGradient: 1,
-    minStartingSize: 10 / 100,
-    maxStartingSize: 20 / 100,
-    SATpoints: 7,
-    // bigSizeAdd: 5,
 
-    // mutation
-    mutationDecay: 0.9995,
-    travelDistance: 60 / 100,
-    sizeDif: 25 / 100,
+    // minStartingSize: 10 / 100,
+    // maxStartingSize: 20 / 100,
+    // SATpoints: 7,
+    // // bigSizeAdd: 5,
 
-    // local minima prevention
-    bigTravelChance: 0.03,
-    bigTravelDist: 5000 / 100,
+    // // mutation
+    // mutationDecay: 0.9995,
+    // travelDistance: 60 / 100,
+    // sizeDif: 25 / 100,
 
-    maxClusterSize: 60 / 100,
-    purpleTravelDistMult: 300 / 100,
+    // // local minima prevention
+    // bigTravelChance: 0.03,
+    // bigTravelDist: 5000 / 100,
 
-    // how much density vs spread should be weighted. 1 = we only care about density, 10 = we care a lot more about the amount of points within
-    purpleDensityValuePower: 2,
-    redDensityValuePower: 1.3,
+    // maxClusterSize: 60 / 100,
+    // purpleTravelDistMult: 300 / 100,
 
-    // exporting
-    clusterSizeAdd: 20
+    // // how much density vs spread should be weighted. 1 = we only care about density, 10 = we care a lot more about the amount of points within
+    // purpleDensityValuePower: 2,
+    // redDensityValuePower: 1.3,
+
+    // // exporting
+    // clusterSizeAdd: 20
+
+    // historical constraints
+
+    // kpc
+    distance: {
+        min: 0.25,
+        max: 86.22,
+        changeRate: 2,
+    },
+
+    // yeras
+    logAge: {
+        min: 6.6,
+        max: 10.2,
+        changeRate: 0.4
+    },
+
+    // solar units
+    metallicity: {
+        min: -2.2,
+        max: 0.7,
+        changeRate: 0.12,
+    },
+
+    // unitless
+    "E(B-V)": {
+        min: 0,
+        max: 1,
+        changeRate: 0.09
+    }
+
+    // mag error not included b/c we don't know mag, and
+    // it's no use guessing at something that is unhelpful!
 })
 let decay = 1;
 
@@ -34,129 +68,131 @@ class GeneticAlgorithmn {
         this.points = points;
 
         // a - purple, b - red
-        this.populationA = new Array(SETTINGS.populationSize);
-        for(let i = 0; i < this.populationA.length; i++){
-            this.populationA[i] = new Guess(points, true);
-        }
-
-        this.populationB = new Array(SETTINGS.populationSize);
-        for(let i = 0; i < this.populationB.length; i++){
-            this.populationB[i] = new Guess(points, false);
+        this.population = new Array(SETTINGS.populationSize);
+        for(let i = 0; i < this.population.length; i++){
+            this.population[i] = new Guess(points, true);
         }
     }
     runGeneration(){
-        for(let i = 0; i < this.populationA.length; i++){
-            this.populationA[i].fitness = this.populationA[i].calculateFitness(this.points, this.populationB);
-            this.populationB[i].fitness = this.populationB[i].calculateFitness(this.points, []);// red beats purple
+        for(let i = 0; i < this.population.length; i++){
+            this.population[i].fitness = this.population[i].calculateFitness(this.points);
         }
 
         // sort in decending order based on fitness
-        this.populationA.sort((a, b) => b.fitness - a.fitness);
-        this.populationB.sort((a, b) => b.fitness - a.fitness);
+        this.population.sort((a, b) => b.fitness - a.fitness);
 
         // console.log(this.population.map(p => p.fitness));
 
         // kill w/ gradient
         // each individual has a chance of dying of rank^2
         // the last individual has a chance of dying of 100%
-        const worstScore = (this.populationA.length - 1) ** 2;
-        for(let i = 0; i < this.populationA.length; i++){
+        const worstScore = (this.population.length - 1) ** 2;
+        for(let i = 0; i < this.population.length; i++){
             const killChance = i ** 2 / worstScore;
             if(Math.random() < killChance){
                 // kill both for speed
-                this.populationA[i].dead = true;
-                this.populationB[i].dead = true;
+                this.population[i].dead = true;
             }
         }
 
-        this.populationA = this.populationA.filter(p => p.dead !== true);
-        this.populationB = this.populationB.filter(p => p.dead !== true);
+        this.population = this.population.filter(p => p.dead !== true);
 
-        while(this.populationA.length < SETTINGS.populationSize){
+        while(this.population.length < SETTINGS.populationSize){
             // regenerate based on a random parent
-            this.populationA.push(new Guess(this.points, true, this.populationA[Math.floor(this.populationA.length * Math.random())] ));
-            this.populationB.push(new Guess(this.points, false, this.populationB[Math.floor(this.populationB.length * Math.random())] ));
+            this.population.push(new Guess(this.points, true, this.population[Math.floor(this.population.length * Math.random())] ));
         }
 
         decay *= SETTINGS.mutationDecay;
     }
     getBestData(){
-        const populationA = this.populationA, populationB = this.populationB;
-
-        // smaller population is assumed to be the one that has the cluster
-        let smallestPopulation = populationA;
-        if(
-            populationA[0].radiusX * populationA[0].radiusY + populationA[1].radiusX * populationA[1].radiusY + populationA[2].radiusX * populationA[2].radiusY >
-            populationB[0].radiusX * populationB[0].radiusY + populationB[1].radiusX * populationB[1].radiusY + populationB[2].radiusX * populationB[2].radiusY
-        ) {
-            smallestPopulation = populationB;
-        }
-
-        let bestFitness = -1;
-        let bestIndex = null;
-        for(let i = 0; i < smallestPopulation.length; i++){
-            if(smallestPopulation[i].fitness === undefined) smallestPopulation[i].fitness = smallestPopulation[i].calculateFitness(this.points, []);
-            if(smallestPopulation[i].fitness > bestFitness){
-                bestFitness = smallestPopulation[i].fitness;
-                bestIndex = i;
-            }
-        }
-
-        const bestAgent = smallestPopulation[bestIndex];
-
-        // include a bit more just for safety
-        bestAgent.radiusX += SETTINGS.clusterSizeAdd;
-        bestAgent.radiusY += SETTINGS.clusterSizeAdd;
-
-        const pointsIn = [];
-        for(let i = 0; i < this.points.length; i++){
-            if(bestAgent.contains(this.points[i]) === true){
-                pointsIn.push({ra: this.points[i].x, dec: this.points[i].y});
-            }
-        }
-
-        bestAgent.radiusX -= SETTINGS.clusterSizeAdd;
-        bestAgent.radiusY -= SETTINGS.clusterSizeAdd;
-
         return {
-            color: smallestPopulation === this.populationA ? 'purple' : 'red',
-            clusterPoints: pointsIn,
-            bestAgent
-        }
+            TODO: true
+        };
+        // let bestFitness = -1;
+        // let bestIndex = null;
+        // for(let i = 0; i < smallestPopulation.length; i++){
+        //     if(smallestPopulation[i].fitness === undefined) smallestPopulation[i].fitness = smallestPopulation[i].calculateFitness(this.points, []);
+        //     if(smallestPopulation[i].fitness > bestFitness){
+        //         bestFitness = smallestPopulation[i].fitness;
+        //         bestIndex = i;
+        //     }
+        // }
+
+        // const bestAgent = smallestPopulation[bestIndex];
+
+        // // include a bit more just for safety
+        // bestAgent.radiusX += SETTINGS.clusterSizeAdd;
+        // bestAgent.radiusY += SETTINGS.clusterSizeAdd;
+
+        // const pointsIn = [];
+        // for(let i = 0; i < this.points.length; i++){
+        //     if(bestAgent.contains(this.points[i]) === true){
+        //         pointsIn.push({ra: this.points[i].x, dec: this.points[i].y});
+        //     }
+        // }
+
+        // bestAgent.radiusX -= SETTINGS.clusterSizeAdd;
+        // bestAgent.radiusY -= SETTINGS.clusterSizeAdd;
+
+        // return {
+        //     color: smallestPopulation === this.populationA ? 'purple' : 'red',
+        //     clusterPoints: pointsIn,
+        //     bestAgent
+        // }
     }
 }
 
+function clamp(min, max, a){
+    if(a < min) return min;
+    if(a > max) return max;
+    return a;
+}
+
 class Guess {
-    constructor(points, isPurple, parent=undefined){
+    constructor(stars, parent=undefined){
         if(parent === undefined){
-            return new Guess(points, isPurple, {
-                x: 15 + Math.random() * -30,//canvas.width,
-                y: -15 + Math.random() * 30,//canvas.height,
-                radiusX: interpolate(SETTINGS.minStartingSize, SETTINGS.maxStartingSize, Math.random()),
-                radiusY: interpolate(SETTINGS.minStartingSize, SETTINGS.maxStartingSize, Math.random()),
+            return new Guess(stars, {
+                distance: interpolate(SETTINGS.distance.min, SETTINGS.distance.max, Math.random()),
+                logAge: interpolate(SETTINGS.logAge.min, SETTINGS.logAge.max, Math.random() ** 2), // most clusters are young
+                metallicity: interpolate(SETTINGS.metallicity.min, SETTINGS.metallicity.max, Math.random()),
+                "E(B-V)": interpolate(SETTINGS["E(B-V)"].min, SETTINGS["E(B-V)"].max, Math.random()),
                 fitness: 0
             });
         }
 
-        const randomAngle = Math.PI * Math.random() * 2;
-        const mag = (isPurple && Math.random() < SETTINGS.bigTravelChance) ? SETTINGS.bigTravelDist * Math.random() : SETTINGS.travelDistance * (isPurple ? SETTINGS.purpleTravelDistMult : 1) * decay * Math.random();//* (decay < 0.1 ? (Math.random() ** 2) : Math.random());
+        this.distance = parent.distance + SETTINGS.distance.changeRate * Math.random() * decay;
+        this.distance = clamp(SETTINGS.distance.min, SETTINGS.distance.max, this.distance);
 
-        this.x = parent.x + Math.cos(randomAngle) * mag;
-        this.y = parent.y + Math.sin(randomAngle) * mag;
+        this.logAge = parent.logAge + SETTINGS.distance.changeRate * Math.random() * decay;
+        this.logAge = clamp(SETTINGS.logAge.min, SETTINGS.logAge.max, this.logAge);
 
-        // hmm we may want to have size change less when the parent size is smaller and we may have 1000 other clever improvements
-        this.radiusX = Math.max(SETTINGS.minStartingSize, parent.radiusX + (Math.random()*2-1) * SETTINGS.sizeDif * decay);
-        this.radiusY = Math.max(SETTINGS.minStartingSize, parent.radiusY + (Math.random()*2-1) * SETTINGS.sizeDif * decay);
+        this.metallicity = parent.metallicity + SETTINGS.metallicity.changeRate * Math.random() * decay;
+        this.metallicity = clamp(SETTINGS.metallicity.min, SETTINGS.metallicity.max, this.metallicity);
 
-        if(isPurple === true){
-            if(this.radiusX > SETTINGS.maxClusterSize) this.radiusX = SETTINGS.maxClusterSize;
-            if(this.radiusY > SETTINGS.maxClusterSize) this.radiusY = SETTINGS.maxClusterSize;
-        }
-        this.isPurple = isPurple;
+        this["E(B-V)"] = parent["E(B-V)"] + SETTINGS["E(B-V)"].changeRate * Math.random() * decay;
+        this["E(B-V)"] = clamp(SETTINGS["E(B-V)"].min, SETTINGS["E(B-V)"].max, this["E(B-V)"]);
+
+        // const randomAngle = Math.PI * Math.random() * 2;
+        // const mag = (isPurple && Math.random() < SETTINGS.bigTravelChance) ? SETTINGS.bigTravelDist * Math.random() : SETTINGS.travelDistance * (isPurple ? SETTINGS.purpleTravelDistMult : 1) * decay * Math.random();//* (decay < 0.1 ? (Math.random() ** 2) : Math.random());
+
+        // this.x = parent.x + Math.cos(randomAngle) * mag;
+        // this.y = parent.y + Math.sin(randomAngle) * mag;
+
+        // // hmm we may want to have size change less when the parent size is smaller and we may have 1000 other clever improvements
+        // this.radiusX = Math.max(SETTINGS.minStartingSize, parent.radiusX + (Math.random()*2-1) * SETTINGS.sizeDif * decay);
+        // this.radiusY = Math.max(SETTINGS.minStartingSize, parent.radiusY + (Math.random()*2-1) * SETTINGS.sizeDif * decay);
+
+        // if(isPurple === true){
+        //     if(this.radiusX > SETTINGS.maxClusterSize) this.radiusX = SETTINGS.maxClusterSize;
+        //     if(this.radiusY > SETTINGS.maxClusterSize) this.radiusY = SETTINGS.maxClusterSize;
+        // }
+        // this.isPurple = isPurple;
         
 
-        // approximate oval with polygon
-        this.sat = this.generateSAT();
+        // // approximate oval with polygon
+        // this.sat = this.generateSAT();
+
+
     }
     generateSAT(){
         const points = [];

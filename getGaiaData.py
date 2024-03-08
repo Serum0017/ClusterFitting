@@ -43,22 +43,22 @@ WHERE
   result = job.get_results()
   df = result.to_pandas()
 
-  mean_pmra = df['pmra'].mean()
-  std_pmra = df['pmra'].std()
-  mean_pmdec = df['pmdec'].mean()
-  std_pmdec = df['pmdec'].std()
+  # mean_pmra = df['pmra'].mean()
+  # std_pmra = df['pmra'].std()
+  # mean_pmdec = df['pmdec'].mean()
+  # std_pmdec = df['pmdec'].std()
 
-  filtered_df = df[
-    (df['pmra'] > mean_pmra - 3*std_pmra) & (df['pmra'] < mean_pmra + 3*std_pmra) &
-    (df['pmdec'] > mean_pmdec - 3*std_pmdec) & (df['pmdec'] < mean_pmdec + 3*std_pmdec)
-  ].copy()
-  filtered_df['pmra'] = filtered_df['pmra'].astype('float32')
-  filtered_df['pmdec'] = filtered_df['pmdec'].astype('float32')
+  # filtered_df = df[
+  #   (df['pmra'] > mean_pmra - 3*std_pmra) & (df['pmra'] < mean_pmra + 3*std_pmra) &
+  #   (df['pmdec'] > mean_pmdec - 3*std_pmdec) & (df['pmdec'] < mean_pmdec + 3*std_pmdec)
+  # ].copy()
+  # filtered_df['pmra'] = filtered_df['pmra'].astype('float32')
+  # filtered_df['pmdec'] = filtered_df['pmdec'].astype('float32')
 
 # #   num_stars = len(filtered_df)
-  return [filtered_df['pmra'], filtered_df['pmdec'], [ra, dec]]
+  # return [filtered_df['pmra'], filtered_df['pmdec'], [ra, dec]]
   # return [df['ra'], df['dec'], [ra, dec]]
-  # return [df['bp_rp'], df['gmag']]
+  return [df['bp_rp'], df['gmag']]
 #   source = ColumnDataSource(filtered_df)
 #   return num_stars, source
 

@@ -100,11 +100,11 @@ function renderPoints(){
 
     ptx.translate(canvas.width - linePadding * 0.5, canvas.height - linePadding);
     ptx.rotate(Math.PI / 2);
-    ptx.fillText('RA (mas/yr)', 0, 0);
+    ptx.fillText('Gaia BP-RP color', -linePadding * 0.3, 0);
     ptx.rotate(-Math.PI / 2);
     ptx.translate(-(canvas.width - linePadding * 0.5), -(canvas.height - linePadding));
 
-    ptx.fillText('DEC (mas/yr)', linePadding, linePadding * 0.5);
+    ptx.fillText('Gaia G Relative Magnitude', linePadding * 1.8, linePadding * 0.5);
 
     // triangles
     ptx.beginPath();
@@ -127,21 +127,14 @@ function render(){
     
     ctx.lineWidth = 2;
     ctx.globalAlpha = 0.3;
-    for(let i = 0; i < GA.populationA.length; i++){
-        let p = GA.populationA[i];
-        ctx.strokeStyle = '#ad9efb';
-        ctx.beginPath();
-        ctx.ellipse(XToScreen(p.x) + canvas.width / 2, YToScreen(p.y) + canvas.height / 2, XToMag(p.radiusX), YToMag(p.radiusY), 0, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.closePath();
-
-        p = GA.populationB[i];
-        ctx.strokeStyle = '#fb9e9e';
-        ctx.beginPath();
-        ctx.ellipse(XToScreen(p.x) + canvas.width / 2, YToScreen(p.y) + canvas.height / 2, XToMag(p.radiusX), YToMag(p.radiusY), 0, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.closePath();
-    }
+    // for(let i = 0; i < GA.populationA.length; i++){
+    //     let p = GA.populationB[i];
+    //     ctx.strokeStyle = '#fb9e9e';
+    //     ctx.beginPath();
+    //     ctx.ellipse(XToScreen(p.x) + canvas.width / 2, YToScreen(p.y) + canvas.height / 2, XToMag(p.radiusX), YToMag(p.radiusY), 0, 0, Math.PI * 2);
+    //     ctx.stroke();
+    //     ctx.closePath();
+    // }
 
     ctx.globalAlpha = 1;
 }
