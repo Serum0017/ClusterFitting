@@ -1,6 +1,6 @@
 const SETTINGS = Object.freeze({
     // general
-    populationSize: 10,//0,
+    populationSize: 100,//0,
     selectionGradient: 1,
 
     // minStartingSize: 10 / 100,
@@ -9,7 +9,7 @@ const SETTINGS = Object.freeze({
     // // bigSizeAdd: 5,
 
     // // mutation
-    // mutationDecay: 0.9995,
+    mutationDecay: 0.9995,
     // travelDistance: 60 / 100,
     // sizeDif: 25 / 100,
 
@@ -36,7 +36,7 @@ const SETTINGS = Object.freeze({
         changeRate: 2,
     },
 
-    // yeras
+    // years
     logAge: {
         min: 6.6,
         max: 10.2,
@@ -70,7 +70,7 @@ class GeneticAlgorithmn {
         // a - purple, b - red
         this.population = new Array(SETTINGS.populationSize);
         for(let i = 0; i < this.population.length; i++){
-            this.population[i] = new Guess(points, true);
+            this.population[i] = new Guess();
         }
     }
     runGeneration(){
@@ -99,7 +99,7 @@ class GeneticAlgorithmn {
 
         while(this.population.length < SETTINGS.populationSize){
             // regenerate based on a random parent
-            this.population.push(new Guess(this.points, true, this.population[Math.floor(this.population.length * Math.random())] ));
+            this.population.push(new Guess(this.population[Math.floor(this.population.length * Math.random())] ));
         }
 
         decay *= SETTINGS.mutationDecay;
@@ -149,9 +149,9 @@ function clamp(min, max, a){
 }
 
 class Guess {
-    constructor(stars, parent=undefined){
+    constructor(parent=undefined){
         if(parent === undefined){
-            return new Guess(stars, {
+            return new Guess({
                 distance: interpolate(SETTINGS.distance.min, SETTINGS.distance.max, Math.random()),
                 logAge: interpolate(SETTINGS.logAge.min, SETTINGS.logAge.max, Math.random() ** 2), // most clusters are young
                 metallicity: interpolate(SETTINGS.metallicity.min, SETTINGS.metallicity.max, Math.random()),
@@ -172,107 +172,44 @@ class Guess {
         this["E(B-V)"] = parent["E(B-V)"] + SETTINGS["E(B-V)"].changeRate * Math.random() * decay;
         this["E(B-V)"] = clamp(SETTINGS["E(B-V)"].min, SETTINGS["E(B-V)"].max, this["E(B-V)"]);
 
-        // const randomAngle = Math.PI * Math.random() * 2;
-        // const mag = (isPurple && Math.random() < SETTINGS.bigTravelChance) ? SETTINGS.bigTravelDist * Math.random() : SETTINGS.travelDistance * (isPurple ? SETTINGS.purpleTravelDistMult : 1) * decay * Math.random();//* (decay < 0.1 ? (Math.random() ** 2) : Math.random());
-
-        // this.x = parent.x + Math.cos(randomAngle) * mag;
-        // this.y = parent.y + Math.sin(randomAngle) * mag;
-
-        // // hmm we may want to have size change less when the parent size is smaller and we may have 1000 other clever improvements
-        // this.radiusX = Math.max(SETTINGS.minStartingSize, parent.radiusX + (Math.random()*2-1) * SETTINGS.sizeDif * decay);
-        // this.radiusY = Math.max(SETTINGS.minStartingSize, parent.radiusY + (Math.random()*2-1) * SETTINGS.sizeDif * decay);
-
-        // if(isPurple === true){
-        //     if(this.radiusX > SETTINGS.maxClusterSize) this.radiusX = SETTINGS.maxClusterSize;
-        //     if(this.radiusY > SETTINGS.maxClusterSize) this.radiusY = SETTINGS.maxClusterSize;
-        // }
-        // this.isPurple = isPurple;
-        
-
-        // // approximate oval with polygon
-        // this.sat = this.generateSAT();
-
-
+        this.points = generateIsochrone(this.distance, this.logAge, this.metallicity, this["E(B-V)"]);
     }
-    generateSAT(){
-        const points = [];
-        for(let i = 0; i < SETTINGS.SATpoints; i++){
-            const angle = i / SETTINGS.SATpoints * (Math.PI * 2);
-            points.push(new SAT.Vector(this.x + this.radiusX * Math.cos(angle), this.y + this.radiusY * Math.sin(angle)));
-        }
-        return new SAT.Polygon(new SAT.Vector(), points);
-    }
-    calculateFitness(points, enemyPopulation) {
-        let pointsWithin = 0;
+    calculateFitness(stars) {
+        // mean squared regression for now, obviously we dont want to fit all stars equally so TODO actually implement isochrone-specific stuff
 
-        for(let i = 0; i < points.length; i++){
-            if(this.contains(points[i]) === true) pointsWithin++;
+        // TODO: Spatial hash!
+
+        let totalDist = 0;
+
+        for(let i = 0; i < stars.length; i++){
+            let minDist = Infinity;
+            for(let j = 0; j < this.points.length; j++){
+                // we don't have to sqrt! we're doing mean SQUARED regression!
+                const dist = (this.points[j][0] - stars[i].x) ** 2 + (this.points[j][1] - stars[i].y) ** 2;
+                if(isNaN(dist) === false && dist < minDist){
+                    minDist = dist;
+                }
+            }
+            if(minDist !== Infinity)totalDist += minDist;
         }
 
-        let enemiesWithin = 0;
-        for(let i = 0; i < enemyPopulation.length; i++){
-            if(this.containsOther(enemyPopulation[i]) === true) enemiesWithin++;
-        }
-
-        return enemiesWithin !== 0 ? -Infinity : pointsWithin ** (this.isPurple ? SETTINGS.purpleDensityValuePower : SETTINGS.redDensityValuePower) / (this.radiusX * this.radiusY);
-    }
-    // calculateFitness(points){
-    //     // fitness is about the number of points within the ellipse
-
-    //     let pointsWithin = 0, pointsWithinBig = 0;
-
-    //     // let angles = [];
-
-    //     // TODO: spatial hash grid!! Looping through everything is really slow
-    //     for(let i = 0; i < points.length; i++){
-    //         if(this.contains(points[i]) === true) {pointsWithin++; pointsWithinBig++;}
-    //         // else if(this.containsBig(points[i]) === true) {
-    //         //     // const angle = Math.atan2(points[i].y - this.y, points[i].x - this.x);
-
-    //         //     // angles.push(angle);
-                
-    //         //     pointsWithinBig++;
-    //         // }
-    //     }
-
-    //     // const max = Math.PI*2;
-    //     // function shortAngleDist(a0,a1) {
-    //     //     const da = (a1 - a0) % max;
-    //     //     return 2*da % max - da;
-    //     // }
-
-    //     // // this could be optimzed a lot lol
-    //     // let angleDif = 0;
-    //     // for(let i = 0; i < 20; i++){
-    //     //     angleDif += Math.abs(shortAngleDist(angles[Math.floor(Math.random() * angles.length)], angles[Math.floor(Math.random() * angles.length)]));
-    //     // }
-
-    //     // to the power of 0.1 because bigger size that contains the same amount of point density should be ranked higher 
-    //     // divide density of 
-    //     const smallDensity = pointsWithin / ((this.radiusX * this.radiusY) /*** 0.8*/);
-    //     // const bigDensity = pointsWithinBig / (((this.radiusX + SETTINGS.bigSizeAdd) * (this.radiusY + SETTINGS.bigSizeAdd)) /*** 0.8*/) + 1; // + SETTINGS.bigSizeAdd ?
-    //     return (smallDensity / 30000 + smallDensity / bigDensity * (this.radiusX + this.radiusY) ** 0.4); /// (angleDif ** 1.6);
-    // }
-    contains({x,y}){
-        const difX = this.x - x;
-        const difY = this.y - y;
-        return (difX / this.radiusX) ** 2 + (difY / this.radiusY) ** 2 <= 1;
-    }
-    // containsBig({x,y}){
-    //     const difX = this.x - x;
-    //     const difY = this.y - y;
-    //     return (difX / (this.radiusX + SETTINGS.bigSizeAdd)) ** 2 + (difY / (this.radiusY + SETTINGS.bigSizeAdd)) ** 2 <= 1;
-    // }
-    containsOther(other){
-        // bounding box check for optimization
-        if(Math.abs(this.x - other.x) > this.radiusX + other.radiusX) return false;
-        if(Math.abs(this.y - other.y) > this.radiusY + other.radiusY) return false;
-
-        // collision detection using the SAT library
-        return SAT.testPolygonPolygon(this.sat, other.sat);
+        // big totalDist = bad
+        return -totalDist;
     }
 }
 
 function interpolate(a0, a1, t){
     return (1-t) * a0 + a1 * t;
+}
+
+// testing just a line for now
+function generateIsochrone(distance, logAge, metallicity, EBV) {
+    const points = [];
+    
+    for(let x = minX; x <= maxX; x += 0.1){
+        const y = interpolate(minY, maxY, EBV) + (maxY - minY) / (maxX - minX) * (distance - SETTINGS.distance.min) / (SETTINGS.distance.max - SETTINGS.distance.min) * x;
+        points.push([x + Math.random() * metallicity * 7/1000,y + Math.random() * logAge/100]);
+    }
+
+    return points;
 }

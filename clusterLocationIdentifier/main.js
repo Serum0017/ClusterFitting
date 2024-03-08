@@ -127,14 +127,20 @@ function render(){
     
     ctx.lineWidth = 2;
     ctx.globalAlpha = 0.3;
-    // for(let i = 0; i < GA.populationA.length; i++){
-    //     let p = GA.populationB[i];
-    //     ctx.strokeStyle = '#fb9e9e';
-    //     ctx.beginPath();
-    //     ctx.ellipse(XToScreen(p.x) + canvas.width / 2, YToScreen(p.y) + canvas.height / 2, XToMag(p.radiusX), YToMag(p.radiusY), 0, 0, Math.PI * 2);
-    //     ctx.stroke();
-    //     ctx.closePath();
-    // }
+    ctx.strokeStyle = '#fb9e9e';
+
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    for(let i = 0; i < GA.population.length; i++){
+        let p = GA.population[i];
+        ctx.beginPath();
+        ctx.moveTo(XToScreen(p.points[0][0]), YToScreen(p.points[0][1]));
+        for(let i = 1; i < p.points.length; i++){
+            ctx.lineTo(XToScreen(p.points[i][0]), YToScreen(p.points[i][1]));
+        }
+        ctx.stroke();
+        ctx.closePath();
+    }
+    ctx.translate(-canvas.width / 2, -canvas.height / 2);
 
     ctx.globalAlpha = 1;
 }
