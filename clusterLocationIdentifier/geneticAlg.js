@@ -172,7 +172,7 @@ class Guess {
         this["E(B-V)"] = parent["E(B-V)"] + SETTINGS["E(B-V)"].changeRate * (Math.random()-0.5) * decay;
         this["E(B-V)"] = clamp(SETTINGS["E(B-V)"].min, SETTINGS["E(B-V)"].max, this["E(B-V)"]);
 
-        this.points = generateIsochrone(this.distance, Math.round(this.logAge * 20) / 20, this.metallicity, this["E(B-V)"]);
+        this.points = generateIsochrone(this.distance, Math.round(this.logAge * 10) / 10, Math.round(this.metallicity) / 10, this["E(B-V)"]);
     }
     calculateFitness(stars) {
         // mean squared regression for now, obviously we dont want to fit all stars equally so TODO actually implement isochrone-specific stuff
@@ -202,7 +202,6 @@ function interpolate(a0, a1, t){
     return (1-t) * a0 + a1 * t;
 }
 
-// testing just a line for now
 function generateIsochrone(distance, logAge, metallicity, EBV) {
     // const points = [];
     
@@ -215,5 +214,5 @@ function generateIsochrone(distance, logAge, metallicity, EBV) {
     
     // TODO: new data w/ metallicity
     // im pulling these numbers out of nowhere, TODO: Figure out how much E(B-V) filter mag actually offsets
-    return isochroneData[logAge].map(p => { return [p[0]-EBV*6, p[1]+distance] });
+    return isochroneData[logAge][metallicity].map(p => { return [p[0]-EBV*6, p[1]+distance] });
 }

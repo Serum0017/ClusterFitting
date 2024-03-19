@@ -24,7 +24,9 @@ function readFileContent(){
     for(let i = 0; i < filesNames.length; i++){
         let fileStream = fs.createReadStream(path + `\\${filesNames[i]}`);
 
-        let metallicity = parseFloat(filesNames[i].split('m')[1].split('.')[0]);
+        let metallicity = filesNames[i].split('m')[1];
+        metallicity = metallicity.substring(0, metallicity.length - 4);
+        metallicity = Math.round(parseFloat(metallicity) * 100000) / 100000;
     
         let fileData = "";
     
@@ -38,17 +40,17 @@ function readFileContent(){
             console.log('finished! Amount to go: ' + amountToEnd);
             if(amountToEnd <= 0){
                 console.log('done!');
-                // console.log(isochroneData);
+
                 let writePath = __filename.split('\\');
                 writePath.pop();
                 writePath = writePath.join('\\');
-                writePath += '\\data.js';
+                writePath += '\\isochroneData.js';
                 console.log('writing to ' + writePath);
-                fs.writeFile(writePath, 'const isochroneData = Object.freeze(' + JSON.stringify(isochroneData).replaceAll('"', '') + ');', err => {
+
+                fs.writeFile(writePath, 'const isochroneData = Object.freeze(' + JSON.stringify(isochroneData) + ');', err => {
                     if (err) {
                       console.error(err);
                     } else {
-                      // file written successfully
                       console.log('file written successfully!');
                     }
                 });
@@ -64,6 +66,7 @@ function addData(columns, metallicity) {
     for(let i = 0; i < columns.length; i++){
         const c = columns[i].split(' ');
         const logAge = Math.round(parseFloat(c[1]) * 100000) / 100000;
+        if(isNaN(logAge)) continue;
         const logLuminosity = parseFloat(c[8]);
         const logTemperature = parseFloat(c[13]);
     
