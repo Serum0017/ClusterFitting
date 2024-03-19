@@ -1,6 +1,6 @@
 const SETTINGS = Object.freeze({
     // general
-    populationSize: 100,//0,
+    populationSize: 10,//100,
     selectionGradient: 1,
 
     // minStartingSize: 10 / 100,
@@ -40,7 +40,7 @@ const SETTINGS = Object.freeze({
     logAge: {
         min: 6.6,
         max: 10.2,
-        changeRate: 0.4
+        changeRate: 1//0.4
     },
 
     // solar units
@@ -160,19 +160,19 @@ class Guess {
             });
         }
 
-        this.distance = parent.distance + SETTINGS.distance.changeRate * Math.random() * decay;
+        this.distance = parent.distance + SETTINGS.distance.changeRate * (Math.random()-0.5) * decay;
         this.distance = clamp(SETTINGS.distance.min, SETTINGS.distance.max, this.distance);
 
-        this.logAge = parent.logAge + SETTINGS.distance.changeRate * Math.random() * decay;
+        this.logAge = parent.logAge + SETTINGS.logAge.changeRate * (Math.random()-0.5) * decay;
         this.logAge = clamp(SETTINGS.logAge.min, SETTINGS.logAge.max, this.logAge);
 
-        this.metallicity = parent.metallicity + SETTINGS.metallicity.changeRate * Math.random() * decay;
+        this.metallicity = parent.metallicity + SETTINGS.metallicity.changeRate * (Math.random()-0.5) * decay;
         this.metallicity = clamp(SETTINGS.metallicity.min, SETTINGS.metallicity.max, this.metallicity);
 
-        this["E(B-V)"] = parent["E(B-V)"] + SETTINGS["E(B-V)"].changeRate * Math.random() * decay;
+        this["E(B-V)"] = parent["E(B-V)"] + SETTINGS["E(B-V)"].changeRate * (Math.random()-0.5) * decay;
         this["E(B-V)"] = clamp(SETTINGS["E(B-V)"].min, SETTINGS["E(B-V)"].max, this["E(B-V)"]);
 
-        this.points = generateIsochrone(this.distance, this.logAge, this.metallicity, this["E(B-V)"]);
+        this.points = generateIsochrone(this.distance, Math.round(this.logAge * 20) / 20, this.metallicity, this["E(B-V)"]);
     }
     calculateFitness(stars) {
         // mean squared regression for now, obviously we dont want to fit all stars equally so TODO actually implement isochrone-specific stuff
@@ -204,12 +204,16 @@ function interpolate(a0, a1, t){
 
 // testing just a line for now
 function generateIsochrone(distance, logAge, metallicity, EBV) {
-    const points = [];
+    // const points = [];
     
-    for(let x = minX; x <= maxX; x += 0.1){
-        const y = interpolate(minY, maxY, EBV) + (maxY - minY) / (maxX - minX) * (distance - SETTINGS.distance.min) / (SETTINGS.distance.max - SETTINGS.distance.min) * x;
-        points.push([x + Math.random() * metallicity * 7/1000,y + Math.random() * logAge/100]);
-    }
+    // for(let x = minX; x <= maxX; x += 0.1){
+    //     const y = interpolate(minY, maxY, EBV) + (maxY - minY) / (maxX - minX) * (distance - SETTINGS.distance.min) / (SETTINGS.distance.max - SETTINGS.distance.min) * x;
+    //     points.push([x + Math.random() * metallicity * 7/1000,y + Math.random() * logAge/100]);
+    // }
 
-    return points;
+    // return points;
+    
+    // TODO: new data w/ metallicity
+    // im pulling these numbers out of nowhere, TODO: Figure out how much E(B-V) filter mag actually offsets
+    return isochroneData[logAge].map(p => { return [p[0]-EBV*6, p[1]+distance] });
 }
