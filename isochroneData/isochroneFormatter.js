@@ -8,10 +8,8 @@ path += '\\finalIsochroneData';
 
 const filesNames = [];
 fs.readdir(path, function(err, items) {
-    // console.log(items);
     for (var i=0; i<items.length; i++) {
-        if(items[i].includes('(1)')) continue;
-        // console.log(items[i]);
+        // if(items[i].includes('(1)')) continue;
         filesNames.push(items[i]);
     }
 
@@ -24,7 +22,7 @@ function readFileContent(){
     for(let i = 0; i < filesNames.length; i++){
         let fileStream = fs.createReadStream(path + `\\${filesNames[i]}`);
 
-        let metallicity = filesNames[i].split('m')[1];
+        let metallicity = filesNames[i].replace('(1)','').split('m')[1];
         metallicity = metallicity.substring(0, metallicity.length - 4);
         metallicity = Math.round(parseFloat(metallicity) * 100000) / 100000;
     

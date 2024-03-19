@@ -40,14 +40,14 @@ const SETTINGS = Object.freeze({
     logAge: {
         min: 6.6,
         max: 10.2,
-        changeRate: 1//0.4
+        changeRate: 3
     },
 
     // solar units
     metallicity: {
         min: -2.2,
-        max: 0.7,
-        changeRate: 0.12,
+        max: 0.6,//0.7, // oops i didn't generate 0.7 yet
+        changeRate: 1,
     },
 
     // unitless
@@ -172,7 +172,17 @@ class Guess {
         this["E(B-V)"] = parent["E(B-V)"] + SETTINGS["E(B-V)"].changeRate * (Math.random()-0.5) * decay;
         this["E(B-V)"] = clamp(SETTINGS["E(B-V)"].min, SETTINGS["E(B-V)"].max, this["E(B-V)"]);
 
-        this.points = generateIsochrone(this.distance, Math.round(this.logAge * 10) / 10, Math.round(this.metallicity) / 10, this["E(B-V)"]);
+        // console.log(Math.round(this.logAge * 10) / 10, Math.round(this.metallicity) / 10);
+
+        this.points = generateIsochrone(this.distance, Math.round(this.logAge * 10) / 10, Math.round(this.metallicity * 10) / 10, this["E(B-V)"]);
+
+        // regenerate isochrone if the points dont exist
+        if(this.points.length === 0){
+            const choices = Object.keys(isochroneData[Math.round(this.logAge * 10) / 10]);
+            this.metallicity = parseFloat(choices[Math.floor(Math.random() * choices.length)]);
+            this.points = generateIsochrone(this.distance, Math.round(this.logAge * 10) / 10, Math.round(this.metallicity * 10) / 10, this["E(B-V)"]);
+            // console.log({choices, age: this.logAge, mtl: this.metallicity, pts: this.points});
+        }
     }
     calculateFitness(stars) {
         // mean squared regression for now, obviously we dont want to fit all stars equally so TODO actually implement isochrone-specific stuff
@@ -212,7 +222,7 @@ function generateIsochrone(distance, logAge, metallicity, EBV) {
 
     // return points;
     
-    // TODO: new data w/ metallicity
     // im pulling these numbers out of nowhere, TODO: Figure out how much E(B-V) filter mag actually offsets
+    if(isochroneData[logAge][metallicity] === undefined) return [];
     return isochroneData[logAge][metallicity].map(p => { return [p[0]-EBV*6, p[1]+distance] });
 }
