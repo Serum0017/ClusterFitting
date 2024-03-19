@@ -47,7 +47,7 @@ WHERE
   std_pmra = df['pmra'].std()
   mean_pmdec = df['pmdec'].mean()
   std_pmdec = df['pmdec'].std()
-
+  
   filtered_df = df[
     (df['pmra'] > mean_pmra - 3*std_pmra) & (df['pmra'] < mean_pmra + 3*std_pmra) &
     (df['pmdec'] > mean_pmdec - 3*std_pmdec) & (df['pmdec'] < mean_pmdec + 3*std_pmdec)
@@ -56,7 +56,8 @@ WHERE
   filtered_df['pmdec'] = filtered_df['pmdec'].astype('float32')
 
 # #   num_stars = len(filtered_df)
-  return [filtered_df['pmra'], filtered_df['pmdec'], [ra, dec]]
+  # return [filtered_df['pmra'], filtered_df['pmdec'], [ra, dec]]
+  return [filtered_df['pmra'], filtered_df['pmdec'], filtered_df['bp_rp'], filtered_df['gmag'], [ra, dec]]
   # return [df['ra'], df['dec'], [ra, dec]]
   # return [df['bp_rp'], df['gmag']]
 #   source = ColumnDataSource(filtered_df)
@@ -67,7 +68,7 @@ WHERE
 warnings.filterwarnings('ignore', category=BokehUserWarning)
 
 # NGC 2264
-# coord = SkyCoord('06h41m00s', '+09d53m00s', frame='icrs')
+coord = SkyCoord('06h41m00s', '+09d53m00s', frame='icrs')
 
 # ASCC 105
 # coord = SkyCoord('19h41m45s', '+27d22m47s', frame='icrs')
@@ -76,7 +77,7 @@ warnings.filterwarnings('ignore', category=BokehUserWarning)
 # coord = SkyCoord('17h17m59.27s', '−23d45m57.7s', frame='icrs')
 
 # Berkely 17
-coord = SkyCoord('5h20m37s', '−30d35m12s', frame='icrs')
+# coord = SkyCoord('5h20m37s', '−30d35m12s', frame='icrs')
 
 # num_stars, source = get_Gaia_data(coord)
 

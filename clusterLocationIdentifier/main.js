@@ -122,7 +122,7 @@ function renderPoints(){
     ptx.closePath();
 }
 
-function render(){
+function render(bestAgent=false){
     ctx.clearRect(0,0,canvas.width, canvas.height);
     
     ctx.lineWidth = 2;
@@ -139,6 +139,15 @@ function render(){
         ctx.strokeStyle = '#fb9e9e';
         ctx.beginPath();
         ctx.ellipse(XToScreen(p.x) + canvas.width / 2, YToScreen(p.y) + canvas.height / 2, XToMag(p.radiusX), YToMag(p.radiusY), 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.closePath();
+    }
+
+    if(bestAgent !== false){
+        let p = bestAgent;
+        ctx.strokeStyle = '#9efb9e';
+        ctx.beginPath();
+        ctx.ellipse(XToScreen(p.x) + canvas.width / 2, YToScreen(p.y) + canvas.height / 2, XToMag(p.radiusX) + SETTINGS.clusterSizeAdd, YToMag(p.radiusY) + SETTINGS.clusterSizeAdd, 0, 0, Math.PI * 2);
         ctx.stroke();
         ctx.closePath();
     }
@@ -166,9 +175,12 @@ function YToMag(y){
 
 const points = [];
 for(let i = 0; i < gaiaData[0].length; i++){
+    if(isNaN(gaiaData[0][i]) === true || isNaN(gaiaData[1][i]) === true || isNaN(gaiaData[2][i]) === true || isNaN(gaiaData[3][i]) === true) continue;
     points.push({
         x: gaiaData[0][i],
-        y: gaiaData[1][i]
+        y: gaiaData[1][i],
+        col: gaiaData[2][i],
+        mag: gaiaData[3][i]
     });
     const pt = points[points.length-1];
     if(pt.x < minX) minX = pt.x;

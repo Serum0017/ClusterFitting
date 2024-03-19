@@ -9,7 +9,7 @@ const SETTINGS = Object.freeze({
 
     // mutation
     mutationDecay: 0.9995,
-    travelDistance: 60 / 100,
+    travelDistance: 600 / 100,
     sizeDif: 25 / 100,
 
     // local minima prevention
@@ -20,8 +20,8 @@ const SETTINGS = Object.freeze({
     purpleTravelDistMult: 300 / 100,
 
     // how much density vs spread should be weighted. 1 = we only care about density, 10 = we care a lot more about the amount of points within
-    purpleDensityValuePower: 2,
-    redDensityValuePower: 1.3,
+    purpleDensityValuePower: 3,
+    redDensityValuePower: 2,//1.3,
 
     // exporting
     clusterSizeAdd: 20
@@ -111,12 +111,14 @@ class GeneticAlgorithmn {
         const pointsIn = [];
         for(let i = 0; i < this.points.length; i++){
             if(bestAgent.contains(this.points[i]) === true){
-                pointsIn.push({ra: this.points[i].x, dec: this.points[i].y});
+                pointsIn.push({ra: this.points[i].x, dec: this.points[i].y, color: this.points[i].col, magnitude: this.points[i].mag});
             }
         }
 
         bestAgent.radiusX -= SETTINGS.clusterSizeAdd;
         bestAgent.radiusY -= SETTINGS.clusterSizeAdd;
+
+        render(bestAgent);
 
         return {
             color: smallestPopulation === this.populationA ? 'purple' : 'red',

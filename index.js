@@ -36,6 +36,8 @@ const py = nodecallspython.interpreter;
 py.import("./getGaiaData.py").then(async function(pymodule) {
     const result = await py.call(pymodule, "get_Gaia_data_js_wrapper");
 
+    
+
     let resultStr = '[';
     for(let i = 0; i < result.length; i++){
         const column = result[i];
@@ -53,7 +55,7 @@ py.import("./getGaiaData.py").then(async function(pymodule) {
 
     // write the file
     const fs = require('node:fs');
-    const content = `/*Auto generated. 2 arrays, first is Gaia BP-RP color, second is Gaia G absolute magnitude*/const gaiaData = ${resultStr}`;
+    const content = `/*Auto generated. 4 arrays, first is Gaia BP-RP color, second is Gaia G absolute magnitude, third is color, fourth is mag.*/const gaiaData = ${resultStr}`;
     fs.writeFile('./clusterLocationIdentifier/gaiaData.js', content, err => {
         if (err) {
             console.error(err);
