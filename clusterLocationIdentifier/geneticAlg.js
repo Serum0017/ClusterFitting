@@ -27,6 +27,10 @@ const SETTINGS = Object.freeze({
     // // exporting
     // clusterSizeAdd: 20
 
+    // spatial hash. The second number must divide the first.
+    totalHashDistance: 5000,
+    hashDistance: 500,
+
     // historical constraints
 
     // kpc
@@ -55,7 +59,7 @@ const SETTINGS = Object.freeze({
         min: 0,
         max: 1,
         changeRate: 0.09
-    }
+    },
 
     // mag error not included b/c we don't know mag, and
     // it's no use guessing at something that is unhelpful!

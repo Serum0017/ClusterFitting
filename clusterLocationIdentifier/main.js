@@ -176,6 +176,11 @@ for(let i = 0; i < gaiaData[0].length; i++){
     if(pt.y > maxY) maxY = pt.y;
 }
 
+window.spatialHashSettings = {
+    totalHashDistance: Math.max(Math.abs(maxX - minX), Math.abs(maxY - minY)),
+}
+window.spatialHashSettings.hashDistance = window.spatialHashSettings.totalHashDistance / 20;// 400 cells
+
 // for zooming in 2x
 // const avgX = (minX + maxX) / 2;
 // const avgY = (minY + maxY) / 2;
