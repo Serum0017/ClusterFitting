@@ -27,10 +27,6 @@ const SETTINGS = Object.freeze({
     // // exporting
     // clusterSizeAdd: 20
 
-    // spatial hash. The second number must divide the first.
-    totalHashDistance: 5000,
-    hashDistance: 500,
-
     // historical constraints
 
     // kpc
