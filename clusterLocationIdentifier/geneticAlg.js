@@ -10,6 +10,9 @@ const SETTINGS = Object.freeze({
 
     // // mutation
     mutationDecay: 0.9995,
+
+    spatialHashQueryDist: 6,
+    
     // travelDistance: 60 / 100,
     // sizeDif: 25 / 100,
 
@@ -67,6 +70,11 @@ class GeneticAlgorithmn {
     constructor(points=[{x:0,y:0}]){
         this.points = points;
 
+        this.spatialHash = new SpatialHash();
+        for(let i = 0; i < this.points.length; i++){
+            this.spatialHash.addPt(this.points[i].x, this.points[i].y);
+        }
+
         // a - purple, b - red
         this.population = new Array(SETTINGS.populationSize);
         for(let i = 0; i < this.population.length; i++){
@@ -75,7 +83,7 @@ class GeneticAlgorithmn {
     }
     runGeneration(){
         for(let i = 0; i < this.population.length; i++){
-            this.population[i].fitness = this.population[i].calculateFitness(this.points);
+            this.population[i].fitness = this.population[i].calculateFitness(this.spatialHash);
         }
 
         // sort in decending order based on fitness
@@ -184,27 +192,33 @@ class Guess {
             // console.log({choices, age: this.logAge, mtl: this.metallicity, pts: this.points});
         }
     }
-    calculateFitness(stars) {
+    calculateFitness(spatialHash) {
+        let fitness = 0;
+        for(let i = 0; i < this.points.length; i++){
+            fitness -= spatialHash.getNumberOfClose(this.points[i][0], this.points[i][1], SETTINGS.spatialHashQueryDist);
+        }
         // mean squared regression for now, obviously we dont want to fit all stars equally so TODO actually implement isochrone-specific stuff
 
         // TODO: Spatial hash!
 
-        let totalDist = 0;
 
-        for(let i = 0; i < stars.length; i++){
-            let minDist = Infinity;
-            for(let j = 0; j < this.points.length; j++){
-                // we don't have to sqrt! we're doing mean SQUARED regression!
-                const dist = (this.points[j][0] - stars[i].x) ** 2 + (this.points[j][1] - stars[i].y) ** 2;
-                if(isNaN(dist) === false && dist < minDist){
-                    minDist = dist;
-                }
-            }
-            if(minDist !== Infinity)totalDist += minDist;
-        }
 
-        // big totalDist = bad
-        return -totalDist;
+        // let totalDist = 0;
+
+        // for(let i = 0; i < stars.length; i++){
+        //     let minDist = Infinity;
+        //     for(let j = 0; j < this.points.length; j++){
+        //         // we don't have to sqrt! we're doing mean SQUARED regression!
+        //         const dist = (this.points[j][0] - stars[i].x) ** 2 + (this.points[j][1] - stars[i].y) ** 2;
+        //         if(isNaN(dist) === false && dist < minDist){
+        //             minDist = dist;
+        //         }
+        //     }
+        //     if(minDist !== Infinity)totalDist += minDist;
+        // }
+
+        // // big totalDist = bad
+        // return -totalDist;
     }
 }
 

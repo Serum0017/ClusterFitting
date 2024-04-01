@@ -2,7 +2,7 @@
 const positionsLen = window.spatialHashSettings.totalHashDistance / window.spatialHashSettings.hashDistance;
 const hashDistance = window.spatialHashSettings.hashDistance;
 let x = 0, y = 0;
-module.exports = class SpatialHash {
+class SpatialHash {
     constructor(){
         // positions: { x: {y: [stars at this hash] } }
         this.positions = [...Array(positionsLen)].map(_ => [...Array(positionsLen)]);
@@ -14,33 +14,38 @@ module.exports = class SpatialHash {
         this.hashId = 0;
     }
     addPt(x, y){
-        this.positions[x][y]++;
+        this.positions[Math.floor(x / hashDistance)][Math.floor(y / hashDistance)]++;
     }
     getNumberOfClose(x,y,radius=3){// radius is square
         let points = 0;
-        const pos = {
-            x: Math.floor(x / hashDistance),
-            y: Math.floor(y / hashDistance)
-        };
-    }
-    logTotalPositions(){
-        // console.log(this.positions);
-        let totalPositions = 0;
-        let totalEntities = 0;
-        let hashPointsPerEntity = 0;
-        for(let x in this.positions){
-            for(let y in this.positions[x]){
-                totalPositions++;
-                for(let i in this.positions[x][y]){
-                    if(hashPointsPerEntity === 0 && Math.random() < 0.1){
-                        hashPointsPerEntity = (this.positions[x][y][i].hashData.top.x - this.positions[x][y][i].hashData.top.y) * (this.positions[x][y][i].hashData.bottom.x - this.positions[x][y][i].hashData.bottom.y);
-                    }
-                    totalEntities++;
-                }
+        const posX = Math.floor(x / hashDistance);
+        const posY = Math.floor(y / hashDistance);
+        
+        for(let x = posX - radius; x < posX + radius; x++){
+            for(let y = posY - radius; y < posY + radius; y++){
+                points += this.positions[x][y];
             }
         }
-        console.log({totalPositions, totalEntities, hashPointsPerEntity});
+        return points;
     }
+    // logTotalPositions(){
+    //     // console.log(this.positions);
+    //     let totalPositions = 0;
+    //     let totalEntities = 0;
+    //     let hashPointsPerEntity = 0;
+    //     for(let x in this.positions){
+    //         for(let y in this.positions[x]){
+    //             totalPositions++;
+    //             for(let i in this.positions[x][y]){
+    //                 if(hashPointsPerEntity === 0 && Math.random() < 0.1){
+    //                     hashPointsPerEntity = (this.positions[x][y][i].hashData.top.x - this.positions[x][y][i].hashData.top.y) * (this.positions[x][y][i].hashData.bottom.x - this.positions[x][y][i].hashData.bottom.y);
+    //                 }
+    //                 totalEntities++;
+    //             }
+    //         }
+    //     }
+    //     console.log({totalPositions, totalEntities, hashPointsPerEntity});
+    // }
     // renderDebug(canvas,ctx,entities){
     //     ctx.globalAlpha = 0.65;
     //     ctx.strokeStyle = 'blue';
