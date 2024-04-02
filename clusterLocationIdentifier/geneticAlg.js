@@ -11,7 +11,7 @@ const SETTINGS = Object.freeze({
     // // mutation
     mutationDecay: 0.9995,
 
-    spatialHashQueryDist: 6,
+    spatialHashQueryDist: 2,
     
     // travelDistance: 60 / 100,
     // sizeDif: 25 / 100,
@@ -195,8 +195,9 @@ class Guess {
     calculateFitness(spatialHash) {
         let fitness = 0;
         for(let i = 0; i < this.points.length; i++){
-            fitness -= spatialHash.getNumberOfClose(this.points[i][0], this.points[i][1], SETTINGS.spatialHashQueryDist);
+            fitness += spatialHash.getNumberOfClose(this.points[i][0], this.points[i][1], SETTINGS.spatialHashQueryDist);
         }
+        return fitness;
         // mean squared regression for now, obviously we dont want to fit all stars equally so TODO actually implement isochrone-specific stuff
 
         // TODO: Spatial hash!
@@ -238,5 +239,44 @@ function generateIsochrone(distance, logAge, metallicity, EBV) {
     
     // im pulling these numbers out of nowhere, TODO: Figure out how much E(B-V) filter mag actually offsets
     if(isochroneData[logAge][metallicity] === undefined) return [];
-    return isochroneData[logAge][metallicity].map(p => { return [p[0]-EBV*6, p[1]+distance] });
+    let [shiftX, shiftY] = getShift(EBV, distance);
+    return isochroneData[logAge][metallicity].map(p => { return [p[0] - shiftX + 10, p[1] + shiftY] });
+}
+
+// shifts - from jules's colab https://colab.research.google.com/drive/1owvmAgPJPJU5J5w5Ce9fZMubGF5RXGBR
+const ag_over_ebv = 2.740;  //ebv coefficient for g band gaia
+const arp_over_ebv = 1.537;  //rp
+function getEbvShift(/*xRange, yRange,*/ebv){
+    // let ag = ag_over_ebv * ebv;
+    // let arp = arp_over_ebv * ebv;
+
+    // let x_shift = ag;
+    // let y_shift = arp;
+    // // let shifted_x_range = []; let shifted_y_range = [];
+    // // for(let i = 0; i < xRange; i++){
+    // //     shifted_x_range[i] = x_shift + xRange[i];
+    // //     shifted_y_range[i] = y_shift + yRange[i];
+    // // }
+
+    // return [x_shift, y_shift];
+    return [ag_over_ebv * ebv, arp_over_ebv * ebv];// shift the isochrone by this [x, y];
+}
+
+const apparent_magnitude_band1 = 15.0;
+const apparent_magnitude_band2 = 14.5;
+function getDistanceShift(distance){
+    let distance_modulus = 5 * (Math.log10(distance) - 1);
+    // let adjusted_apparent_magnitude_band1 = apparent_magnitude_band1 - distance_modulus;
+    // let adjusted_apparent_magnitude_band2 = apparent_magnitude_band2 - distance_modulus;
+
+    // let x_shift = adjusted_apparent_magnitude_band1;
+    // let y_shift = adjusted_apparent_magnitude_band2;
+
+    // return [x_shift, y_shift];
+    return [apparent_magnitude_band1 - distance_modulus, apparent_magnitude_band2 - distance_modulus];
+}
+
+function getShift(ebv, distance){
+    let distance_modulus = 5 * (Math.log10(distance) - 1);
+    return [ag_over_ebv * ebv + apparent_magnitude_band1 - distance_modulus, arp_over_ebv * ebv + apparent_magnitude_band2 - distance_modulus];
 }

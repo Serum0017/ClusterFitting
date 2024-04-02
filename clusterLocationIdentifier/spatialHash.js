@@ -1,5 +1,6 @@
-// biggest things will have a radius of 1000, meaning they will always be in the 8000
-const positionsLen = window.spatialHashSettings.totalHashDistance / window.spatialHashSettings.hashDistance;
+let positionsLen = window.spatialHashSettings.totalHashDistance / window.spatialHashSettings.hashDistance + 1;
+if(positionsLen % 2 === 1) positionsLen++;
+const halfPositionsLen = positionsLen / 2;
 const hashDistance = window.spatialHashSettings.hashDistance;
 let x = 0, y = 0;
 class SpatialHash {
@@ -14,15 +15,15 @@ class SpatialHash {
         this.hashId = 0;
     }
     addPt(x, y){
-        this.positions[Math.floor(x / hashDistance)][Math.floor(y / hashDistance)]++;
+        this.positions[Math.floor((x - minX) / hashDistance)][Math.floor((y - minY) / hashDistance)]++;
     }
     getNumberOfClose(x,y,radius=3){// radius is square
         let points = 0;
-        const posX = Math.floor(x / hashDistance);
-        const posY = Math.floor(y / hashDistance);
+        const posX = Math.floor((x - minX) / hashDistance);
+        const posY = Math.floor((y - minY) / hashDistance);
         
-        for(let x = posX - radius; x < posX + radius; x++){
-            for(let y = posY - radius; y < posY + radius; y++){
+        for(let x = Math.max(0, posX - radius); x <= Math.min(this.positions.length, posX + radius); x++){
+            for(let y = Math.max(0, posY - radius); y <= Math.min(this.positions[0].length, posY + radius); y++){
                 points += this.positions[x][y];
             }
         }
