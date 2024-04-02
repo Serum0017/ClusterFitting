@@ -29,6 +29,9 @@ for(let i = 0; i < gaiaData[0].length; i++){
     if(pt.y > maxY) maxY = pt.y;
 }
 
+// for BE 17
+maxY *= 1.2;
+
 window.spatialHashSettings = {
     totalHashDistance: Math.max(Math.abs(maxX - minX), Math.abs(maxY - minY)),
 }

@@ -2,6 +2,7 @@ let positionsLen = window.spatialHashSettings.totalHashDistance / window.spatial
 if(positionsLen % 2 === 1) positionsLen++;
 const halfPositionsLen = positionsLen / 2;
 const hashDistance = window.spatialHashSettings.hashDistance;
+const halfHashDistance = hashDistance / 2;
 let x = 0, y = 0;
 class SpatialHash {
     constructor(){
@@ -29,6 +30,26 @@ class SpatialHash {
         }
         return points;
     }
+    // this is an actually useful debug function
+    // renderPositions(){
+    //     const lastGA = ctx.globalAlpha;
+    //     ctx.globalAlpha = 0.1;
+    //     for(let x = 0; x < this.positions.length; x++){
+    //         for(let y = 0; y < this.positions[x].length; y++){
+    //             const scaledX = minX + (x / this.positions.length) * Math.abs(maxX - minX);
+    //             const scaledY = minY + (y / this.positions[x].length) * Math.abs(maxY - minY);
+
+    //             ctx.fillStyle = 'red';
+    //             ctx.beginPath();
+    //             ctx.arc(XToScreen(scaledX) + canvas.width / 2, YToScreen(scaledY) + canvas.height / 2, 12, 0, Math.PI * 2);
+    //             ctx.fill();
+    //             ctx.closePath();
+    //         }
+    //     }
+    //     ctx.globalAlpha = lastGA;
+    // }
+
+
     // logTotalPositions(){
     //     // console.log(this.positions);
     //     let totalPositions = 0;

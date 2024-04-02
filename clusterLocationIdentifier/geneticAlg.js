@@ -9,7 +9,7 @@ const SETTINGS = Object.freeze({
     // // bigSizeAdd: 5,
 
     // // mutation
-    mutationDecay: 0.9995,
+    mutationDecay: 0.999,//0.9995,
 
     spatialHashQueryDist: 2,
     
@@ -36,14 +36,14 @@ const SETTINGS = Object.freeze({
     distance: {
         min: 0.25,
         max: 86.22,
-        changeRate: 2,
+        changeRate: 8,
     },
 
     // years
     logAge: {
         min: 6.6,
         max: 10.2,
-        changeRate: 3
+        changeRate: 4
     },
 
     // solar units
@@ -57,7 +57,7 @@ const SETTINGS = Object.freeze({
     "E(B-V)": {
         min: 0,
         max: 1,
-        changeRate: 0.09
+        changeRate: 0.9
     },
 
     // mag error not included b/c we don't know mag, and
@@ -161,7 +161,7 @@ class Guess {
         if(parent === undefined){
             return new Guess({
                 distance: interpolate(SETTINGS.distance.min, SETTINGS.distance.max, Math.random()),
-                logAge: interpolate(SETTINGS.logAge.min, SETTINGS.logAge.max, Math.random() ** 2), // most clusters are young
+                logAge: interpolate(SETTINGS.logAge.min, SETTINGS.logAge.max, Math.random() ** 1.5), // most clusters are young
                 metallicity: interpolate(SETTINGS.metallicity.min, SETTINGS.metallicity.max, Math.random()),
                 "E(B-V)": interpolate(SETTINGS["E(B-V)"].min, SETTINGS["E(B-V)"].max, Math.random()),
                 fitness: 0
@@ -195,7 +195,7 @@ class Guess {
     calculateFitness(spatialHash) {
         let fitness = 0;
         for(let i = 0; i < this.points.length; i++){
-            fitness += spatialHash.getNumberOfClose(this.points[i][0], this.points[i][1], SETTINGS.spatialHashQueryDist);
+            fitness += spatialHash.getNumberOfClose(this.points[i][0], this.points[i][1], SETTINGS.spatialHashQueryDist) ** 2;// big emphasis on small density bc we want the isochrone to 100% find the smallest region
         }
         return fitness;
         // mean squared regression for now, obviously we dont want to fit all stars equally so TODO actually implement isochrone-specific stuff
@@ -239,8 +239,8 @@ function generateIsochrone(distance, logAge, metallicity, EBV) {
     
     // im pulling these numbers out of nowhere, TODO: Figure out how much E(B-V) filter mag actually offsets
     if(isochroneData[logAge][metallicity] === undefined) return [];
-    let [shiftX, shiftY] = getShift(EBV, distance);
-    return isochroneData[logAge][metallicity].map(p => { return [p[0] - shiftX + 10, p[1] + shiftY] });
+    // let [shiftX, shiftY] = getShift(EBV, distance);
+    return isochroneData[logAge][metallicity].map(p => { return [p[0] /*- shiftX + 10*/-EBV*6, p[1] + /*shiftY * 2 - 10*/distance] });
 }
 
 // shifts - from jules's colab https://colab.research.google.com/drive/1owvmAgPJPJU5J5w5Ce9fZMubGF5RXGBR

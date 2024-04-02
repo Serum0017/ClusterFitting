@@ -52,13 +52,13 @@ py.import("./getGaiaData.py").then(async function(pymodule) {
     // console.log(resultStr);
 
     // write the file
-    const fs = require('node:fs');
-    const content = `/*Auto generated. 2 arrays, first is Gaia BP-RP color, second is Gaia G absolute magnitude*/const gaiaData = ${resultStr}`;
-    fs.writeFile('./clusterLocationIdentifier/gaiaData.js', content, err => {
-        if (err) {
-            console.error(err);
-        } else {
-            console.log('file written successfully!');
-        }
-    });
+    // const fs = require('node:fs');
+    // const content = `/*Auto generated. 2 arrays, first is Gaia BP-RP color, second is Gaia G absolute magnitude*/const gaiaData = ${resultStr}`;
+    // fs.writeFile('./clusterLocationIdentifier/gaiaData.js', content, err => {
+    //     if (err) {
+    //         console.error(err);
+    //     } else {
+    //         console.log('file written successfully!');
+    //     }
+    // });
 });

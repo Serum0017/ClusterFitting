@@ -43,6 +43,8 @@ WHERE
   result = job.get_results()
   df = result.to_pandas()
 
+  print(df)
+
   # mean_pmra = df['pmra'].mean()
   # std_pmra = df['pmra'].std()
   # mean_pmdec = df['pmdec'].mean()

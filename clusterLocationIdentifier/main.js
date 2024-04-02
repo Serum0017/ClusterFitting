@@ -57,7 +57,7 @@ function renderPoints(){
     // axes
     ptx.lineWidth = 5;
     ptx.strokeStyle = 'black';
-    const linePadding = 60;
+    const linePadding = 90;
     ptx.lineCap = 'square';
 
     ptx.beginPath();
@@ -68,12 +68,12 @@ function renderPoints(){
     ptx.stroke();
     ptx.closePath();
 
-    ptx.font = "18px Inter";
+    ptx.font = "26px Inter";
     ptx.textAlign = 'center';
     ptx.textBaseline = 'middle';
     ptx.fillStyle = 'black';
 
-    const axisSize = 50;
+    const axisSize = 80;
     for(let x = linePadding * 2; x <= canvas.width - linePadding; x += axisSize){
         ptx.beginPath();
         ptx.moveTo(x, canvas.height - linePadding * 1.3);
@@ -143,6 +143,8 @@ function render(){
     ctx.translate(-canvas.width / 2, -canvas.height / 2);
 
     ctx.globalAlpha = 1;
+
+    // GA.spatialHash.renderPositions();
 }
 
 // for zooming in 2x
