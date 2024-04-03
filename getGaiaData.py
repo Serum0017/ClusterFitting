@@ -68,7 +68,7 @@ WHERE
 warnings.filterwarnings('ignore', category=BokehUserWarning)
 
 # NGC 2264
-coord = SkyCoord('06h41m00s', '+09d53m00s', frame='icrs')
+# coord = SkyCoord('06h41m00s', '+09d53m00s', frame='icrs')
 
 # ASCC 105
 # coord = SkyCoord('19h41m45s', '+27d22m47s', frame='icrs')
@@ -78,6 +78,12 @@ coord = SkyCoord('06h41m00s', '+09d53m00s', frame='icrs')
 
 # Berkely 17
 # coord = SkyCoord('5h20m37s', '−30d35m12s', frame='icrs')
+
+# NGC 7789
+# coord = SkyCoord('23h57m24s', '+56d42m30s', frame='icrs')
+
+# NGC 2323 also known as messier 50
+coord = SkyCoord('07h02m47.5s', '+08d20m16s', frame='icrs')
 
 # num_stars, source = get_Gaia_data(coord)
 
