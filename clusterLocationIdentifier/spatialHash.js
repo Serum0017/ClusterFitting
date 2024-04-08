@@ -5,31 +5,53 @@ const hashDistance = window.spatialHashSettings.hashDistance;
 const halfHashDistance = hashDistance / 2;
 let x = 0, y = 0;
 class SpatialHash {
-    constructor(){
-        // positions: { x: {y: [stars at this hash] } }
-        this.positions = [...Array(positionsLen)].map(_ => [...Array(positionsLen)]);
-        for(x in this.positions){
-            for(y in this.positions){
-                this.positions[x][y] = 0;
-            }
-        }
-        this.hashId = 0;
-    }
-    addPt(x, y){
-        this.positions[Math.floor((x - minX) / hashDistance)][Math.floor((y - minY) / hashDistance)]++;
-    }
-    getNumberOfClose(x,y,radius=3){// radius is square
-        let points = 0;
-        const posX = Math.floor((x - minX) / hashDistance);
-        const posY = Math.floor((y - minY) / hashDistance);
+    // REAL
+    // constructor(){
+    //     // positions: { x: {y: [stars at this hash] } }
+    //     this.positions = [...Array(positionsLen)].map(_ => [...Array(positionsLen)]);
+    //     for(x in this.positions){
+    //         for(y in this.positions){
+    //             this.positions[x][y] = 0;
+    //         }
+    //     }
+    //     this.hashId = 0;
+    // }
+    // addPt(x, y){
+    //     this.positions[Math.floor((x - minX) / hashDistance)][Math.floor((y - minY) / hashDistance)]++;
+    // }
+    // getNumberOfClose(x,y,radius=3){// radius is square
+    //     let points = 0;
+    //     const posX = Math.floor((x - minX) / hashDistance);
+    //     const posY = Math.floor((y - minY) / hashDistance);
         
-        for(let x = Math.max(0, posX - radius); x <= Math.min(this.positions.length, posX + radius); x++){
-            for(let y = Math.max(0, posY - radius); y <= Math.min(this.positions[0].length, posY + radius); y++){
-                points += this.positions[x][y];
+    //     for(let x = Math.max(0, posX - radius); x <= Math.min(this.positions.length, posX + radius); x++){
+    //         for(let y = Math.max(0, posY - radius); y <= Math.min(this.positions[0].length, posY + radius); y++){
+    //             if(isNaN(this.positions[x][y]) === true) continue;
+    //             points += this.positions[x][y];
+    //         }
+    //     }
+    //     return points;
+    // }
+    // ENDREAL
+
+    constructor() {
+        this.positions = [];
+    }
+    addPt(x,y){
+        this.positions.push([x,y]);
+    }
+    getNumberOfClose(px,py,radius=3){
+        let pts = 0;
+        const maxD = (/*radius**/hashDistance)**2;
+        for(let i = 0; i < this.positions.length; i++){
+            const [x,y] = this.positions[i];
+            if((px-x)**2+(py-y)**2 < maxD){
+                pts++;
             }
         }
-        return points;
+        return pts;
     }
+
     // this is an actually useful debug function
     // renderPositions(){
     //     const lastGA = ctx.globalAlpha;

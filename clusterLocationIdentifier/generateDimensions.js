@@ -3,6 +3,10 @@ function XToScreen(x){
     return ((x - minX) / (maxX - minX) - 0.5) * canvas.width;
 }
 
+function ScreenToX(s){
+    return (s / canvas.width + 0.5) * (maxX - minX) + minX;
+}
+
 // just for scaling something to a magnitude, without an offset. Used for ellipse radii
 function XToMag(x){
     return x / (maxX - minX) * canvas.width;
@@ -10,6 +14,10 @@ function XToMag(x){
 
 function YToScreen(y){
     return ((y - minY) / (maxY - minY) - 0.5) * canvas.height;
+}
+
+function ScreenToY(s){
+    return (s / canvas.height + 0.5) * (maxY - minY) + minY;
 }
 
 function YToMag(y){

@@ -11,7 +11,7 @@ const SETTINGS = Object.freeze({
     // // mutation
     mutationDecay: 0.999,//0.9995,
 
-    spatialHashQueryDist: 2,
+    spatialHashQueryDist: 1,//2,
     
     // travelDistance: 60 / 100,
     // sizeDif: 25 / 100,
@@ -195,7 +195,7 @@ class Guess {
     calculateFitness(spatialHash) {
         let fitness = 0;
         for(let i = 0; i < this.points.length; i++){
-            fitness += spatialHash.getNumberOfClose(this.points[i][0], this.points[i][1], SETTINGS.spatialHashQueryDist) ** 2;// big emphasis on small density bc we want the isochrone to 100% find the smallest region
+            fitness += spatialHash.getNumberOfClose(this.points[i][0], this.points[i][1], SETTINGS.spatialHashQueryDist);// big emphasis on small density bc we want the isochrone to 100% find the smallest region
         }
         return fitness;
         // mean squared regression for now, obviously we dont want to fit all stars equally so TODO actually implement isochrone-specific stuff

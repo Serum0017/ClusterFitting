@@ -120,8 +120,23 @@ function renderPoints(){
     ptx.lineTo(linePadding * 0.85, linePadding * 1);
     ptx.fill();
     ptx.closePath();
+
+    ptx.fillStyle = 'red';
+    console.log({minX, maxX});
+    for(let x = minX; x < maxX; x += (maxX-minX)/20){
+        for(let y = minY; y < maxY; y += (maxY-minY)/20){
+            ptx.beginPath();
+            ptx.arc(XToScreen(x) + canvas.width / 2, YToScreen(y) + canvas.height / 2, GA.spatialHash.getNumberOfClose(x,y,1) / 100, 0, Math.PI * 2);
+            ptx.fill();
+            ptx.closePath();
+        }
+    }
+    // GA.spatialHash.getNumberOfClose()
+
 }
 
+// let debugX = 0;
+// let debugY = 0;
 function render(){
     ctx.clearRect(0,0,canvas.width, canvas.height);
     
@@ -145,6 +160,13 @@ function render(){
     ctx.globalAlpha = 1;
 
     // GA.spatialHash.renderPositions();
+    // if(debugX !== 0){
+    //     ctx.beginPath();
+    //     ctx.arc(XToScreen(debugX) + canvas.width / 2, YToScreen(debugY) + canvas.height / 2, 30, 0, Math.PI * 2);
+    //     ctx.fill();
+    //     ctx.stroke();
+    //     ctx.closePath();
+    // }
 }
 
 // for zooming in 2x
@@ -173,6 +195,10 @@ function run(){
 run();
 
 window.onmousedown = (e) => {
+    // debugX = ScreenToX(e.pageX);
+    // debugY = ScreenToY(e.pageY);
+    // console.log(debugX, debugY, GA.spatialHash.getNumberOfClose(debugX, debugY, 3));
+
     // right click
     if(e.which === 3 || e.button === 2) { 
         GA = new GeneticAlgorithmn(points);
