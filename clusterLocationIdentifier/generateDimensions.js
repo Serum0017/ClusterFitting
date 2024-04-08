@@ -41,6 +41,8 @@ for(let i = 0; i < gaiaData[0].length; i++){
 maxY *= 1.2;
 
 window.spatialHashSettings = {
-    totalHashDistance: Math.max(Math.abs(maxX - minX), Math.abs(maxY - minY)),
+    totalHashDistanceX: Math.abs(maxX - minX),
+    totalHashDistanceY: Math.abs(maxY - minY),
 }
-window.spatialHashSettings.hashDistance = window.spatialHashSettings.totalHashDistance / 20;// 400 cells
+window.spatialHashSettings.hashDistanceX = window.spatialHashSettings.totalHashDistanceX / 20;// 400 cells
+window.spatialHashSettings.hashDistanceY = window.spatialHashSettings.totalHashDistanceY / 20;// 400 cells

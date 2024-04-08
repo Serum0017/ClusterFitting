@@ -11,7 +11,11 @@ const SETTINGS = Object.freeze({
     // // mutation
     mutationDecay: 0.999,//0.9995,
 
-    spatialHashQueryDist: 1,//2,
+    // unused
+    // spatialHashQueryDist: 1,//2,
+
+    evennessValuePower: 0.03,
+    densityEmphasisPower: 2,
     
     // travelDistance: 60 / 100,
     // sizeDif: 25 / 100,
@@ -80,6 +84,8 @@ class GeneticAlgorithmn {
         for(let i = 0; i < this.population.length; i++){
             this.population[i] = new Guess();
         }
+
+        this.lastBestFitness = 0;
     }
     runGeneration(){
         for(let i = 0; i < this.population.length; i++){
@@ -113,40 +119,31 @@ class GeneticAlgorithmn {
         decay *= SETTINGS.mutationDecay;
     }
     getBestData(){
+        const p = this.population;
+
+        let bestFitness = -1;
+        let bestIndex = null;
+        for(let i = 0; i < p.length; i++){
+            if(p[i].fitness === undefined) p[i].fitness = p[i].calculateFitness(this.spatialHash);
+            if(p[i].fitness > bestFitness){
+                bestFitness = p[i].fitness;
+                bestIndex = i;
+            }
+        }
+
+        const bestAgent = p[bestIndex];
+
+        this.spatialHash.renderCellsWith(bestAgent.points);
+
+        const fitnessIncreaseRatioSinceLastTime = bestFitness / this.lastBestFitness;
+        this.lastBestFitness = bestFitness;
+
         return {
-            TODO: true
-        };
-        // let bestFitness = -1;
-        // let bestIndex = null;
-        // for(let i = 0; i < smallestPopulation.length; i++){
-        //     if(smallestPopulation[i].fitness === undefined) smallestPopulation[i].fitness = smallestPopulation[i].calculateFitness(this.points, []);
-        //     if(smallestPopulation[i].fitness > bestFitness){
-        //         bestFitness = smallestPopulation[i].fitness;
-        //         bestIndex = i;
-        //     }
-        // }
-
-        // const bestAgent = smallestPopulation[bestIndex];
-
-        // // include a bit more just for safety
-        // bestAgent.radiusX += SETTINGS.clusterSizeAdd;
-        // bestAgent.radiusY += SETTINGS.clusterSizeAdd;
-
-        // const pointsIn = [];
-        // for(let i = 0; i < this.points.length; i++){
-        //     if(bestAgent.contains(this.points[i]) === true){
-        //         pointsIn.push({ra: this.points[i].x, dec: this.points[i].y});
-        //     }
-        // }
-
-        // bestAgent.radiusX -= SETTINGS.clusterSizeAdd;
-        // bestAgent.radiusY -= SETTINGS.clusterSizeAdd;
-
-        // return {
-        //     color: smallestPopulation === this.populationA ? 'purple' : 'red',
-        //     clusterPoints: pointsIn,
-        //     bestAgent
-        // }
+            // color: smallestPopulation === this.populationA ? 'purple' : 'red',
+            // clusterPoints: pointsIn,
+            bestAgent,
+            fitnessIncreaseRatioSinceLastTime
+        }
     }
 }
 
@@ -182,20 +179,26 @@ class Guess {
 
         // console.log(Math.round(this.logAge * 10) / 10, Math.round(this.metallicity) / 10);
 
-        this.points = generateIsochrone(this.distance, Math.round(this.logAge * 10) / 10, Math.round(this.metallicity * 10) / 10, this["E(B-V)"]);
+        const result = generateIsochrone(this.distance, Math.round(this.logAge * 10) / 10, Math.round(this.metallicity * 10) / 10, this["E(B-V)"]);
+        this.points = result[0];
+        this.densities = result[1];
+
+        // console.log(this.densities);
 
         // regenerate isochrone if the points dont exist
         if(this.points.length === 0){
             const choices = Object.keys(isochroneData[Math.round(this.logAge * 10) / 10]);
             this.metallicity = parseFloat(choices[Math.floor(Math.random() * choices.length)]);
-            this.points = generateIsochrone(this.distance, Math.round(this.logAge * 10) / 10, Math.round(this.metallicity * 10) / 10, this["E(B-V)"]);
+            const result = generateIsochrone(this.distance, Math.round(this.logAge * 10) / 10, Math.round(this.metallicity * 10) / 10, this["E(B-V)"]);
+            this.points = result[0];
+            this.densities = result[1];
             // console.log({choices, age: this.logAge, mtl: this.metallicity, pts: this.points});
         }
     }
     calculateFitness(spatialHash) {
         let fitness = 0;
         for(let i = 0; i < this.points.length; i++){
-            fitness += spatialHash.getNumberOfClose(this.points[i][0], this.points[i][1], SETTINGS.spatialHashQueryDist);// big emphasis on small density bc we want the isochrone to 100% find the smallest region
+            fitness += spatialHash.getNumberOfClose(this.points[i][0], this.points[i][1]/*, SETTINGS.spatialHashQueryDist*/) ** SETTINGS.evennessValuePower / (this.densities[i] ** SETTINGS.densityEmphasisPower);// big emphasis on small density bc we want the isochrone to 100% find the smallest region
         }
         return fitness;
         // mean squared regression for now, obviously we dont want to fit all stars equally so TODO actually implement isochrone-specific stuff
@@ -238,9 +241,50 @@ function generateIsochrone(distance, logAge, metallicity, EBV) {
     // return points;
     
     // im pulling these numbers out of nowhere, TODO: Figure out how much E(B-V) filter mag actually offsets
-    if(isochroneData[logAge][metallicity] === undefined) return [];
+    const d = isochroneData[logAge][metallicity];
+    if(d === undefined) return [[],[]];
     // let [shiftX, shiftY] = getShift(EBV, distance);
-    return isochroneData[logAge][metallicity].map(p => { return [p[0] /*- shiftX + 10*/-EBV*6, p[1] + /*shiftY * 2 - 10*/distance] });
+    return [d.map(p => { return [p[0] /*- shiftX + 10*/-EBV*6, p[1] + /*shiftY * 2 - 10*/distance] }), generatePointDensity(d, logAge, metallicity)];
+}
+
+let pointDensityCache = {};
+function generatePointDensity(points, la, me){
+    // let density = [0];
+    // for(let i = 1; i < points.length-1; i++){
+    //     const p = points[i];
+    //     const prev = points[i-1];
+    //     const next = points[i+1];
+
+    //     const prevDistSq = (prev[0] - p[0]) ** 2 + (prev[1] - p[1]) ** 2;
+    //     const nextDistSq = (next[0] - p[0]) ** 2 + (next[1] - p[1]) ** 2;
+    // }
+
+    if(pointDensityCache[la] !== undefined && pointDensityCache[la][me] !== undefined) return pointDensityCache[la][me];
+    let spHash = new SpatialHash();
+
+    // align to the minimum of the spatial hash grid
+    let minPtX = Infinity;
+    let minPtY = Infinity;
+    for(let i = 0; i < points.length; i++){
+        if(points[i][0] < minPtX) minPtX = points[i][0];
+        if(points[i][1] < minPtY) minPtY = points[i][1];
+    }
+    const difX = minX - minPtX;
+    const difY = minY - minPtY;
+    let newPts = points.map(p => {return [p[0] + difX, p[1] + difY]});
+    for(let i = 0; i < newPts.length; i++){
+        spHash.addPt(newPts[i][0], newPts[i][1]);
+    }
+    
+    // calculate densities as the amount of pts in the spatial hash cell. This isn't perfect but it doesn't need to be.
+    let densities = [];
+    for(let i = 0; i < newPts.length; i++){
+        densities[i] = spHash.getNumberInRadius(newPts[i][0], newPts[i][1], 2);
+    }
+
+    if(pointDensityCache[la] === undefined) pointDensityCache[la] = {};
+    pointDensityCache[la][me] = densities;
+    return densities;
 }
 
 // shifts - from jules's colab https://colab.research.google.com/drive/1owvmAgPJPJU5J5w5Ce9fZMubGF5RXGBR

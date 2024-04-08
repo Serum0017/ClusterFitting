@@ -121,18 +121,7 @@ function renderPoints(){
     ptx.fill();
     ptx.closePath();
 
-    ptx.fillStyle = 'red';
-    console.log({minX, maxX});
-    for(let x = minX; x < maxX; x += (maxX-minX)/20){
-        for(let y = minY; y < maxY; y += (maxY-minY)/20){
-            ptx.beginPath();
-            ptx.arc(XToScreen(x) + canvas.width / 2, YToScreen(y) + canvas.height / 2, GA.spatialHash.getNumberOfClose(x,y,1) / 100, 0, Math.PI * 2);
-            ptx.fill();
-            ptx.closePath();
-        }
-    }
-    // GA.spatialHash.getNumberOfClose()
-
+    GA.spatialHash.renderDebug();
 }
 
 // let debugX = 0;
