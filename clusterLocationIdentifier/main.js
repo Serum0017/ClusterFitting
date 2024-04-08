@@ -121,7 +121,7 @@ function renderPoints(){
     ptx.fill();
     ptx.closePath();
 
-    GA.spatialHash.renderDebug();
+    // GA.spatialHash.renderDebug();
 }
 
 // let debugX = 0;
