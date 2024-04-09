@@ -200,7 +200,7 @@ class Guess {
         for(let i = 0; i < this.points.length; i++){
             fitness += spatialHash.getNumberOfClose(this.points[i][0], this.points[i][1]/*, SETTINGS.spatialHashQueryDist*/) ** SETTINGS.evennessValuePower / (this.densities[i] ** SETTINGS.densityEmphasisPower);// big emphasis on small density bc we want the isochrone to 100% find the smallest region
         }
-        return fitness;
+        return fitness / this.points.length;
         // mean squared regression for now, obviously we dont want to fit all stars equally so TODO actually implement isochrone-specific stuff
 
         // TODO: Spatial hash!
