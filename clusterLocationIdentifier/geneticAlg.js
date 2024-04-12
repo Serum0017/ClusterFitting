@@ -20,8 +20,8 @@ const SETTINGS = Object.freeze({
     purpleTravelDistMult: 300 / 100,
 
     // how much density vs spread should be weighted. 1 = we only care about density, 10 = we care a lot more about the amount of points within
-    purpleDensityValuePower: 3,//0.1,//2,//1.8,
-    redDensityValuePower: 2,//1.8,//1.5,//2,//1.3,
+    purpleDensityValuePower: 3,//3,//0.1,//2,//1.8,
+    redDensityValuePower: 1,//2,//1.8,//1.5,//2,//1.3,
 
     // exporting
     clusterSizeAdd: 0.4//20
@@ -84,13 +84,13 @@ class GeneticAlgorithmn {
         const populationA = this.populationA, populationB = this.populationB;
 
         // smaller population is assumed to be the one that has the cluster
-        let smallestPopulation = populationA;
-        if(
-            populationA[0].radiusX * populationA[0].radiusY + populationA[1].radiusX * populationA[1].radiusY + populationA[2].radiusX * populationA[2].radiusY >
-            populationB[0].radiusX * populationB[0].radiusY + populationB[1].radiusX * populationB[1].radiusY + populationB[2].radiusX * populationB[2].radiusY
-        ) {
-            smallestPopulation = populationB;
-        }
+        let smallestPopulation = populationB//A;
+        // if(
+        //     populationA[0].radiusX * populationA[0].radiusY + populationA[1].radiusX * populationA[1].radiusY + populationA[2].radiusX * populationA[2].radiusY >
+        //     populationB[0].radiusX * populationB[0].radiusY + populationB[1].radiusX * populationB[1].radiusY + populationB[2].radiusX * populationB[2].radiusY
+        // ) {
+        //     smallestPopulation = populationB;
+        // }
 
         let bestFitness = -1;
         let bestIndex = null;
