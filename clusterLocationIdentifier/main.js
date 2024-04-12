@@ -44,11 +44,11 @@ function renderPoints(){
     ptx.fillStyle = 'white';
     ptx.fillRect(0,0,canvas.width,canvas.height);
 
-    ptx.globalAlpha = 0.01//0.04;
+    ptx.globalAlpha = 1;//0.01//0.04;
     ptx.fillStyle = '#006db7';
     for(let i = 0; i < points.length; i++){
         ptx.beginPath();
-        ptx.arc(XToScreen(points[i].x) + canvas.width / 2, YToScreen(points[i].y) + canvas.height / 2, 18/*12*/, 0, Math.PI * 2);
+        ptx.arc(XToScreen(points[i].x) + canvas.width / 2, YToScreen(points[i].y) + canvas.height / 2, 6/*18*/, 0, Math.PI * 2);
         ptx.fill();
         ptx.closePath();
     }
