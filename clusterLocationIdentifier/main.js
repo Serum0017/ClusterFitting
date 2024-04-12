@@ -147,7 +147,7 @@ function render(bestAgent=false){
         let p = bestAgent;
         ctx.strokeStyle = '#9efb9e';
         ctx.beginPath();
-        ctx.ellipse(XToScreen(p.x) + canvas.width / 2, YToScreen(p.y) + canvas.height / 2, XToMag(p.radiusX) + SETTINGS.clusterSizeAdd, YToMag(p.radiusY) + SETTINGS.clusterSizeAdd, 0, 0, Math.PI * 2);
+        ctx.ellipse(XToScreen(p.x) + canvas.width / 2, YToScreen(p.y) + canvas.height / 2, XToMag(p.radiusX + SETTINGS.clusterSizeAdd), YToMag(p.radiusY + SETTINGS.clusterSizeAdd), 0, 0, Math.PI * 2);
         ctx.stroke();
         ctx.closePath();
     }

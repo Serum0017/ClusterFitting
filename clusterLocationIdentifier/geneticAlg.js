@@ -24,7 +24,7 @@ const SETTINGS = Object.freeze({
     redDensityValuePower: 2,//1.8,//1.5,//2,//1.3,
 
     // exporting
-    clusterSizeAdd: 20
+    clusterSizeAdd: 0.4//20
 })
 let decay = 1;
 
@@ -114,6 +114,11 @@ class GeneticAlgorithmn {
                 pointsIn.push({ra: this.points[i].x, dec: this.points[i].y, color: this.points[i].col, magnitude: this.points[i].mag});
             }
         }
+
+        console.log(bestAgent.x - this.points[0].x, bestAgent.radiusX);
+
+        // console.log(this.points.length, pointsIn.length, this.points);
+        // console.log(bestAgent);
 
         bestAgent.radiusX -= SETTINGS.clusterSizeAdd;
         bestAgent.radiusY -= SETTINGS.clusterSizeAdd;
