@@ -29526,10 +29526,3 @@ const importedData = [
         "magnitude": 16.44502830505371
     }
 ]
-
-const gaiaData = [[],[]];
-for(let i = 0; i < importedData.length; i++){
-    const {color, magnitude} = importedData[i];
-    gaiaData[0].push(color);
-    gaiaData[1].push(magnitude);
-}
