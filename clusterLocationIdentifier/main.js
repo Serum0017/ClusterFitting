@@ -44,11 +44,11 @@ function renderPoints(){
     ptx.fillStyle = 'white';
     ptx.fillRect(0,0,canvas.width,canvas.height);
 
-    ptx.globalAlpha = 1;//0.01//0.04;
+    ptx.globalAlpha = 0.04;//0.01//0.04;
     ptx.fillStyle = '#006db7';
     for(let i = 0; i < points.length; i++){
         ptx.beginPath();
-        ptx.arc(XToScreen(points[i].x) + canvas.width / 2, YToScreen(points[i].y) + canvas.height / 2, 6/*18*/, 0, Math.PI * 2);
+        ptx.arc(XToScreen(points[i].x) + canvas.width / 2, YToScreen(points[i].y) + canvas.height / 2, /*6*/18, 0, Math.PI * 2);
         ptx.fill();
         ptx.closePath();
     }
@@ -130,7 +130,7 @@ function render(){
     ctx.clearRect(0,0,canvas.width, canvas.height);
     
     ctx.lineWidth = 2;
-    ctx.globalAlpha = 0.3;
+    ctx.globalAlpha = 0.6;
     ctx.strokeStyle = '#fb9e9e';
 
     ctx.translate(canvas.width / 2, canvas.height / 2);

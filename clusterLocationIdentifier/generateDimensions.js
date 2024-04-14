@@ -1,3 +1,10 @@
+const gaiaData = [[],[]];
+for(let i = 0; i < importedData.length; i++){
+    const {color, magnitude} = importedData[i];
+    gaiaData[0].push(color);
+    gaiaData[1].push(magnitude);
+}
+
 let maxX = -Infinity, maxY = -Infinity, minX = Infinity, minY = Infinity;
 function XToScreen(x){
     return ((x - minX) / (maxX - minX) - 0.5) * canvas.width;
