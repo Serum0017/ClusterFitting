@@ -44,8 +44,8 @@ for(let i = 0; i < gaiaData[0].length; i++){
     if(pt.y > maxY) maxY = pt.y;
 }
 
-// for BE 17
-maxY *= 1.2;
+// this just makes it look better because of the y axis
+maxY *= 1.1;
 
 window.spatialHashSettings = {
     totalHashDistanceX: Math.abs(maxX - minX),

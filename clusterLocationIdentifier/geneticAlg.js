@@ -47,14 +47,14 @@ const SETTINGS = Object.freeze({
     logAge: {
         min: 6.6,
         max: 10.2,
-        changeRate: 4
+        changeRate: 8
     },
 
     // solar units
     metallicity: {
         min: -2.2,
         max: 0.6,//0.7, // oops i didn't generate 0.7 yet
-        changeRate: 1,
+        changeRate: 2,
     },
 
     // unitless
@@ -63,6 +63,9 @@ const SETTINGS = Object.freeze({
         max: 1,
         changeRate: 0.9
     },
+
+    bigJumpMult: 10,
+    bigJumpChance: 0.05,
 
     // mag error not included b/c we don't know mag, and
     // it's no use guessing at something that is unhelpful!
@@ -153,6 +156,7 @@ function clamp(min, max, a){
     return a;
 }
 
+let bigJump = false;
 class Guess {
     constructor(parent=undefined){
         if(parent === undefined){
@@ -161,8 +165,13 @@ class Guess {
                 logAge: interpolate(SETTINGS.logAge.min, SETTINGS.logAge.max, Math.random() ** 1.5), // most clusters are young
                 metallicity: interpolate(SETTINGS.metallicity.min, SETTINGS.metallicity.max, Math.random()),
                 "E(B-V)": interpolate(SETTINGS["E(B-V)"].min, SETTINGS["E(B-V)"].max, Math.random()),
-                fitness: 0
+                fitness: 0,
             });
+        }
+
+        if(decay !== 0 && Math.random() < SETTINGS.bigJumpChance){
+            decay *= SETTINGS.bigJumpMult;
+            bigJump = true;
         }
 
         this.distance = parent.distance + SETTINGS.distance.changeRate * (Math.random()-0.5) * decay;
@@ -176,6 +185,11 @@ class Guess {
 
         this["E(B-V)"] = parent["E(B-V)"] + SETTINGS["E(B-V)"].changeRate * (Math.random()-0.5) * decay;
         this["E(B-V)"] = clamp(SETTINGS["E(B-V)"].min, SETTINGS["E(B-V)"].max, this["E(B-V)"]);
+
+        if(bigJump === true){
+            decay /= SETTINGS.bigJumpMult;
+            bigJump = false;
+        }
 
         // console.log(Math.round(this.logAge * 10) / 10, Math.round(this.metallicity) / 10);
 
