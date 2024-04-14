@@ -5,3 +5,16 @@ canvas{
     left: 0;
     top: 0;
 }
+
+.importBox {
+    /* height: 80%; */
+    /* aspect-ratio: 1 / 1;
+    z-index: 100; */
+    margin: 0;
+    resize: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+}
