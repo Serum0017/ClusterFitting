@@ -1,7 +1,10 @@
 const importBox = document.querySelector('.importBox');
 
+let focusBox = true;
 window.onmousedown = (e) => {
-    importBox.focus();
+    if(focusBox) importBox.focus();
+    else importBox.blur();
+    focusBox = !focusBox;
     return e.preventDefault();
 }
 
