@@ -44,11 +44,11 @@ function renderPoints(){
     ptx.fillStyle = 'white';
     ptx.fillRect(0,0,canvas.width,canvas.height);
 
-    ptx.globalAlpha = 0.04;//0.01//0.04;
+    ptx.globalAlpha = 1//0.04;//0.01//0.04;
     ptx.fillStyle = '#006db7';
     for(let i = 0; i < points.length; i++){
         ptx.beginPath();
-        ptx.arc(XToScreen(points[i].x) + canvas.width / 2, YToScreen(points[i].y) + canvas.height / 2, /*6*/18, 0, Math.PI * 2);
+        ptx.arc(XToScreen(points[i].x) + canvas.width / 2, YToScreen(points[i].y) + canvas.height / 2, 8/*6*//*18*/, 0, Math.PI * 2);
         ptx.fill();
         ptx.closePath();
     }
@@ -100,11 +100,11 @@ function renderPoints(){
 
     ptx.translate(canvas.width - linePadding * 0.5, canvas.height - linePadding);
     ptx.rotate(Math.PI / 2);
-    ptx.fillText('Gaia BP-RP color', -linePadding * 0.3, 0);
+    ptx.fillText('Gaia BP-RP', -linePadding * 0.3, 0);
     ptx.rotate(-Math.PI / 2);
     ptx.translate(-(canvas.width - linePadding * 0.5), -(canvas.height - linePadding));
 
-    ptx.fillText('Gaia G Relative Magnitude', linePadding * 1.8, linePadding * 0.5);
+    ptx.fillText('Gaia RP', linePadding * 1.8, linePadding * 0.5);
 
     // triangles
     ptx.beginPath();

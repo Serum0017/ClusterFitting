@@ -40,7 +40,7 @@ class SpatialHash {
 
         for(let x = Math.max(0, posX - radius); x <= Math.min(this.positions.length, posX + radius); x++){
             for(let y = Math.max(0, posY - radius); y <= Math.min(this.positions[0].length, posY + radius); y++){
-                if(isNaN(this.positions[x][y]) === true) continue;
+                if(this.positions[x] === undefined || isNaN(this.positions[x][y]) === true) continue;
                 ps += this.positions[x][y];
             }
         }

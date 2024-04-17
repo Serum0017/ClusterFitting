@@ -258,7 +258,7 @@ function generateIsochrone(distance, logAge, metallicity, EBV) {
     const d = isochroneData[logAge][metallicity];
     if(d === undefined) return [[],[]];
     // let [shiftX, shiftY] = getShift(EBV, distance);
-    return [d.map(p => { return [p[0] - EBV*6, p[1] + distance] }), generatePointDensity(d, logAge, metallicity)];
+    return [d.map(p => { return [p[0] - EBV*4, p[1] + distance*0.5] }), generatePointDensity(d, logAge, metallicity)];
 }
 
 let pointDensityCache = {};
