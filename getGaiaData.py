@@ -80,7 +80,10 @@ warnings.filterwarnings('ignore', category=BokehUserWarning)
 # coord = SkyCoord('5h20m37s', '−30d35m12s', frame='icrs')
 
 # NGC 7789
-coord = SkyCoord('23h57m24s', '+56d42m30s', frame='icrs')
+# coord = SkyCoord('23h57m24s', '+56d42m30s', frame='icrs')
+
+# M23
+coord = SkyCoord('17h57m04s', '-18d59m06s', frame='icrs')
 
 # NGC 2323 also known as messier 50
 # coord = SkyCoord('07h02m47.5s', '+08d20m16s', frame='icrs')

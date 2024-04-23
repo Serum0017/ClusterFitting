@@ -40,6 +40,18 @@ resize();
 //     }
 // }
 
+function exportImage(){
+    const ec = document.createElement('canvas');
+    ec.width = canvas.width;
+    ec.height = canvas.height;
+    const c = ec.getContext('2d');
+
+    c.drawImage(pointsCanvas, 0, 0);
+    c.drawImage(canvas, 0, 0);
+
+    return ec.toDataURL();
+}
+
 function renderPoints(){
     ptx.fillStyle = 'white';
     ptx.fillRect(0,0,canvas.width,canvas.height);
@@ -47,6 +59,7 @@ function renderPoints(){
     ptx.globalAlpha = 0.01//0.04;
     ptx.fillStyle = '#006db7';
     for(let i = 0; i < points.length; i++){
+        if(Math.random() > 0.1) continue;
         ptx.beginPath();
         ptx.arc(XToScreen(points[i].x) + canvas.width / 2, YToScreen(points[i].y) + canvas.height / 2, 18/*12*/, 0, Math.PI * 2);
         ptx.fill();
