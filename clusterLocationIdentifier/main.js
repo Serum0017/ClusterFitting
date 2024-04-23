@@ -104,7 +104,7 @@ function renderPoints(){
     ptx.rotate(-Math.PI / 2);
     ptx.translate(-(canvas.width - linePadding * 0.5), -(canvas.height - linePadding));
 
-    ptx.fillText('Gaia RP', linePadding * 1.8, linePadding * 0.5);
+    ptx.fillText('Gaia RP', linePadding, linePadding * 0.5);
 
     // triangles
     ptx.beginPath();

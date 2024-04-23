@@ -25,12 +25,12 @@ class SpatialHash {
         this.positions[Math.min(positionsLenX-1,Math.max(0,Math.floor((x - minX) / hashDistanceX)))][Math.min(positionsLenY-1,Math.max(0,Math.floor((y - minY) / hashDistanceY)))]++;
     }
     getNumberOfClose(x,y){
-        try{
-            this.positions[Math.max(0,Math.min(positionsLenX-1,Math.floor((x - minX) / hashDistanceX)))][Math.max(0,Math.min(positionsLenY-1,Math.floor((y - minY) / hashDistanceY)))];
-        } catch(e){
-            console.log(x,y);
-            return 0;
-        }
+        // try{
+            // this.positions[Math.max(0,Math.min(positionsLenX-1,Math.floor((x - minX) / hashDistanceX)))][Math.max(0,Math.min(positionsLenY-1,Math.floor((y - minY) / hashDistanceY)))];
+        // } catch(e){
+        //     console.log(x,y);
+        //     return 0;
+        // }
         return this.positions[Math.max(0,Math.min(positionsLenX-1,Math.floor((x - minX) / hashDistanceX)))][Math.max(0,Math.min(positionsLenY-1,Math.floor((y - minY) / hashDistanceY)))];
     }
     getNumberInRadius(x,y,radius=3){// square radius

@@ -190,6 +190,9 @@ class Guess {
             bigJump = false;
         }
 
+        // this.logAge = 8.7;
+        // this.metallicity = -.15;
+
         // this.logAge = 7.1;// continue off on https://arxiv.org/pdf/1804.09374.pdf. Probably not useful so i think i'll just pull things from either the astromancer code or puppeteer
         // this.metallicity = 0.6;
         // decay = 0;
@@ -215,7 +218,7 @@ class Guess {
     calculateFitness(spatialHash) {
         let fitness = 0;
         for(let i = 0; i < this.points.length; i++){
-            fitness += spatialHash.getNumberOfClose(this.points[i][0], this.points[i][1]/*, SETTINGS.spatialHashQueryDist*/) ** SETTINGS.evennessValuePower / (this.densities[i] ** SETTINGS.densityEmphasisPower);// big emphasis on small density bc we want the isochrone to 100% find the smallest region
+            fitness += spatialHash.getNumberOfClose(this.points[i][0], this.points[i][1]/*, SETTINGS.spatialHashQueryDist*/) ** SETTINGS.evennessValuePower / (this.densities[i] /*** SETTINGS.densityEmphasisPower*/);// big emphasis on small density bc we want the isochrone to 100% find the smallest region
         }
         return fitness // / this.points.length;
         // mean squared regression for now, obviously we dont want to fit all stars equally so TODO actually implement isochrone-specific stuff
@@ -263,7 +266,7 @@ function generateIsochrone(distance, logAge, metallicity, EBV) {
 
     const [shiftX, shiftY] = getShift(EBV, distance);
     // let [shiftX, shiftY] = getShift(EBV, distance);
-    return [d.map(p => { return [-p[0] + shiftX, -p[1] + shiftY] }), generatePointDensity(d, logAge, metallicity)];
+    return [d.map(p => { return [p[0] + shiftX, p[1] + shiftY] }), generatePointDensity(d, logAge, metallicity)];
 }
 
 let pointDensityCache = {};
@@ -298,7 +301,7 @@ function generatePointDensity(points, la, me){
     // calculate densities as the amount of pts in the spatial hash cell. This isn't perfect but it doesn't need to be.
     let densities = [];
     for(let i = 0; i < newPts.length; i++){
-        densities[i] = spHash.getNumberInRadius(newPts[i][0], newPts[i][1], 2);
+        densities[i] = spHash.getNumberInRadius(newPts[i][0], newPts[i][1], 2) + 1;
     }
 
     if(pointDensityCache[la] === undefined) pointDensityCache[la] = {};
@@ -344,7 +347,7 @@ const arp_over_ebv = 1.537;  //rp
 function getShift(ebv, distance){
     // let distance_modulus = 5 * (Math.log10(distance) - 1);
     return [
-        ag_over_ebv * ebv + 3,
-        arp_over_ebv * ebv + 15.809976 - 5 * (Math.log10(distance) - 1)
+        ag_over_ebv * ebv,
+        arp_over_ebv * ebv + 15.809976 - 5 * (Math.log10(distance) - 1) - 2
     ];
 }
