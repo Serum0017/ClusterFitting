@@ -14,7 +14,7 @@ const SETTINGS = Object.freeze({
     // unused
     // spatialHashQueryDist: 1,//2,
 
-    evennessValuePower: 0.03,
+    evennessValuePower: 0.8,// 0.03
     densityEmphasisPower: 2,
     
     // travelDistance: 60 / 100,
@@ -46,14 +46,14 @@ const SETTINGS = Object.freeze({
     // years
     logAge: {
         min: 6.6,
-        max: 10.2,
+        max: 10.15,//10.2,
         changeRate: 2
     },
 
     // solar units
     metallicity: {
-        min: -2.2,
-        max: 0.6,//0.7, // oops i didn't generate 0.7 yet
+        min: -2.15,
+        max: 0.55,
         changeRate: 2,
     },
 
@@ -190,13 +190,13 @@ class Guess {
             bigJump = false;
         }
 
-        this.logAge = 7.1;// continue off on https://arxiv.org/pdf/1804.09374.pdf. Probably not useful so i think i'll just pull things from either the astromancer code or puppeteer
-        this.metallicity = 0.6;
-        decay = 0;
+        // this.logAge = 7.1;// continue off on https://arxiv.org/pdf/1804.09374.pdf. Probably not useful so i think i'll just pull things from either the astromancer code or puppeteer
+        // this.metallicity = 0.6;
+        // decay = 0;
 
         // console.log(Math.round(this.logAge * 10) / 10, Math.round(this.metallicity) / 10);
 
-        const result = generateIsochrone(this.distance, Math.round(this.logAge * 10) / 10, Math.round(this.metallicity * 10) / 10, this["E(B-V)"]);
+        const result = generateIsochrone(this.distance, Math.round(this.logAge * 20) / 20, Math.round(this.metallicity * 20) / 20, this["E(B-V)"]);
         this.points = result[0];
         this.densities = result[1];
 
@@ -204,9 +204,9 @@ class Guess {
 
         // regenerate isochrone if the points dont exist
         if(this.points.length === 0){
-            const choices = Object.keys(isochroneData[Math.round(this.logAge * 10) / 10]);
+            const choices = Object.keys(isochroneData[Math.round(this.logAge * 20) / 20]);
             this.metallicity = parseFloat(choices[Math.floor(Math.random() * choices.length)]);
-            const result = generateIsochrone(this.distance, Math.round(this.logAge * 10) / 10, Math.round(this.metallicity * 10) / 10, this["E(B-V)"]);
+            const result = generateIsochrone(this.distance, Math.round(this.logAge * 20) / 20, Math.round(this.metallicity * 20) / 20, this["E(B-V)"]);
             this.points = result[0];
             this.densities = result[1];
             // console.log({choices, age: this.logAge, mtl: this.metallicity, pts: this.points});
@@ -217,7 +217,7 @@ class Guess {
         for(let i = 0; i < this.points.length; i++){
             fitness += spatialHash.getNumberOfClose(this.points[i][0], this.points[i][1]/*, SETTINGS.spatialHashQueryDist*/) ** SETTINGS.evennessValuePower / (this.densities[i] ** SETTINGS.densityEmphasisPower);// big emphasis on small density bc we want the isochrone to 100% find the smallest region
         }
-        return fitness / this.points.length;
+        return fitness // / this.points.length;
         // mean squared regression for now, obviously we dont want to fit all stars equally so TODO actually implement isochrone-specific stuff
 
         // TODO: Spatial hash!
@@ -344,7 +344,7 @@ const arp_over_ebv = 1.537;  //rp
 function getShift(ebv, distance){
     // let distance_modulus = 5 * (Math.log10(distance) - 1);
     return [
-        ag_over_ebv * ebv + 5,
-        arp_over_ebv * ebv + 15.809976 - 5 * (Math.log10(distance) - 1) - 10
+        ag_over_ebv * ebv + 3,
+        arp_over_ebv * ebv + 15.809976 - 5 * (Math.log10(distance) - 1)
     ];
 }

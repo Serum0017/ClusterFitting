@@ -13,14 +13,14 @@ for(let i = 0; i < importedData.length; i++){
 
 for(let i = 0; i < importedData.length; i++){
     let [x, y, _ , _2 ] = importedData[i];
-    // x = parseFloat(x);
-    // if(Number.isFinite(x) === false) continue;
-    // y = parseFloat(y);
+    x = parseFloat(x);
+    if(Number.isFinite(x) === false) continue;
+    y = parseFloat(y);
 
     // DISPLAYING ISOCHRONE TEMP
-    _ = parseFloat(_);
-    if(Number.isFinite(_) === false) continue;
-    _2 = parseFloat(_2);
+    // _ = parseFloat(_);
+    // if(Number.isFinite(_) === false) continue;
+    // _2 = parseFloat(_2);
 
     // let [id,ra,dec,distance,pm_ra,pm_dec,BP,BP_error,G,G_error,RP,RP_error] = importedData[i];
     // const rp = parseFloat(RP);
@@ -40,12 +40,12 @@ for(let i = 0; i < importedData.length; i++){
 
     // console.log({color, magnitude});
     // const {color, magnitude} = importedData[i];
-    // gaiaData[0].push(x);
-    // gaiaData[1].push(y);// TODO: axis labels
+    gaiaData[0].push(x);
+    gaiaData[1].push(y);// TODO: axis labels
 
     // to see isochrone points
-    gaiaData[0].push(parseFloat(_));
-    gaiaData[1].push(parseFloat(_2));
+    // gaiaData[0].push(parseFloat(_));
+    // gaiaData[1].push(parseFloat(_2));
 }
 
 let maxX = -Infinity, maxY = -Infinity, minX = Infinity, minY = Infinity;
@@ -89,6 +89,11 @@ for(let i = 0; i < gaiaData[0].length; i++){
 
 // this just makes it look better because of the y axis
 maxY *= 1.1;
+
+minX -= 2;
+maxX += 2;
+minY -= 2;
+maxY += 2;
 
 window.spatialHashSettings = {
     totalHashDistanceX: Math.abs(maxX - minX),
