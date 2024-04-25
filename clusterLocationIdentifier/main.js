@@ -98,13 +98,14 @@ function renderPoints(){
         ptx.translate(-linePadding * 0.4, -y);
     }
 
+    ptx.font = "32px Inter";
     ptx.translate(canvas.width - linePadding * 0.5, canvas.height - linePadding);
     ptx.rotate(Math.PI / 2);
-    ptx.fillText('Gaia BP-RP', -linePadding * 0.3, 0);
+    ptx.fillText('BP-RP', 0, 0);// x was originally -linePadding * 0.3
     ptx.rotate(-Math.PI / 2);
     ptx.translate(-(canvas.width - linePadding * 0.5), -(canvas.height - linePadding));
 
-    ptx.fillText('Gaia RP', linePadding, linePadding * 0.5);
+    ptx.fillText('RP', linePadding, linePadding * 0.5);
 
     // triangles
     ptx.beginPath();

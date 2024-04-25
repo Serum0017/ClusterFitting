@@ -38,9 +38,9 @@ const SETTINGS = Object.freeze({
 
     // kpc
     distance: {
-        min: 0.25,
-        max: 86.22,
-        changeRate: 3,
+        min: 0.22,
+        max: 1.18,
+        changeRate: 1,
     },
 
     // years
@@ -197,6 +197,11 @@ class Guess {
         // this.metallicity = 0.6;
         // decay = 0;
 
+        // this.logAge = 9.6;
+        // this.metallicity = -2.2;
+        // this["E(B-V)"] = 1;
+        // this.distance = 1.19;
+
         // console.log(Math.round(this.logAge * 10) / 10, Math.round(this.metallicity) / 10);
 
         const result = generateIsochrone(this.distance, Math.round(this.logAge * 20) / 20, Math.round(this.metallicity * 20) / 20, this["E(B-V)"]);
@@ -312,42 +317,114 @@ function generatePointDensity(points, la, me){
 // scrapped because we can just use the isochrone's bounding box 
 
 // shifts - from jules's colab https://colab.research.google.com/drive/1owvmAgPJPJU5J5w5Ce9fZMubGF5RXGBR
-const ag_over_ebv = 3.172-1.537;  //ebv coefficient for g band gaia
-const arp_over_ebv = 1.537;  //rp
-// function getEbvShift(/*xRange, yRange,*/ebv){
-//     // let ag = ag_over_ebv * ebv;
-//     // let arp = arp_over_ebv * ebv;
+// const ag_over_ebv = 3.172-1.537;  //ebv coefficient for g band gaia
+// const arp_over_ebv = 1.537;  //rp
+// // function getEbvShift(/*xRange, yRange,*/ebv){
+// //     // let ag = ag_over_ebv * ebv;
+// //     // let arp = arp_over_ebv * ebv;
 
-//     // let x_shift = ag;
-//     // let y_shift = arp;
-//     // // let shifted_x_range = []; let shifted_y_range = [];
-//     // // for(let i = 0; i < xRange; i++){
-//     // //     shifted_x_range[i] = x_shift + xRange[i];
-//     // //     shifted_y_range[i] = y_shift + yRange[i];
-//     // // }
+// //     // let x_shift = ag;
+// //     // let y_shift = arp;
+// //     // // let shifted_x_range = []; let shifted_y_range = [];
+// //     // // for(let i = 0; i < xRange; i++){
+// //     // //     shifted_x_range[i] = x_shift + xRange[i];
+// //     // //     shifted_y_range[i] = y_shift + yRange[i];
+// //     // // }
 
-//     // return [x_shift, y_shift];
-//     return [ag_over_ebv * ebv, arp_over_ebv * ebv];// shift the isochrone by this [x, y];
-// }
+// //     // return [x_shift, y_shift];
+// //     return [ag_over_ebv * ebv, arp_over_ebv * ebv];// shift the isochrone by this [x, y];
+// // }
 
-// const apparent_magnitude_band1 = 15.0;
-// const apparent_magnitude_band2 = 14.5;
-// function getDistanceShift(distance){
+// // const apparent_magnitude_band1 = 15.0;
+// // const apparent_magnitude_band2 = 14.5;
+// // function getDistanceShift(distance){
+// //     // let distance_modulus = 5 * (Math.log10(distance) - 1);
+// //     // let adjusted_apparent_magnitude_band1 = apparent_magnitude_band1 - distance_modulus;
+// //     // let adjusted_apparent_magnitude_band2 = apparent_magnitude_band2 - distance_modulus;
+
+// //     // let x_shift = adjusted_apparent_magnitude_band1;
+// //     // let y_shift = adjusted_apparent_magnitude_band2;
+
+// //     // return [x_shift, y_shift];
+// //     return [0, 15.809976 - 5 * (Math.log10(distance) - 1)];
+// // }
+
+// function getShift(ebv, distance){
 //     // let distance_modulus = 5 * (Math.log10(distance) - 1);
-//     // let adjusted_apparent_magnitude_band1 = apparent_magnitude_band1 - distance_modulus;
-//     // let adjusted_apparent_magnitude_band2 = apparent_magnitude_band2 - distance_modulus;
-
-//     // let x_shift = adjusted_apparent_magnitude_band1;
-//     // let y_shift = adjusted_apparent_magnitude_band2;
-
-//     // return [x_shift, y_shift];
-//     return [0, 15.809976 - 5 * (Math.log10(distance) - 1)];
+//     return [
+//         ag_over_ebv * ebv,
+//         arp_over_ebv * ebv + 15.809976 - 5 * (Math.log10(distance) - 1) - 2
+//     ];
 // }
 
-function getShift(ebv, distance){
-    // let distance_modulus = 5 * (Math.log10(distance) - 1);
+// const filterWavelength = {
+//     "U": 0.364,
+//     "B": 0.442,
+//     "V": 0.54,
+//     "R": 0.647,
+//     "I": 0.7865,
+//     "uprime": 0.354,
+//     "gprime": 0.475,
+//     "rprime": 0.622,
+//     "iprime": 0.763,
+//     "zprime": 0.905,
+//     "J": 1.25,
+//     "H": 1.65,
+//     "K": 2.15,
+//     // "Ks": 2.15,
+//     "W1": 3.4,
+//     "W2": 4.6,
+//     "W3": 12,
+//     "W4": 22,
+//     "BP": 0.532,
+//     "G": 0.673,
+//     "RP": 0.797,
+// };
+
+function getShift(reddening/*E(B-V)*/, distance) {
+    // const plotParams = this.isochroneService.getPlotParams();
+    const blueExtinction = getExtinction(0.532/*"BP"*/, reddening);
+    const redExtinction = getExtinction(/*"RP"*/0.797, reddening);
+    // const lumExtinction = getExtinction("RP", reddening);
     return [
-        ag_over_ebv * ebv,
-        arp_over_ebv * ebv + 15.809976 - 5 * (Math.log10(distance) - 1) - 2
-    ];
+        /*x:*/ -(redExtinction - blueExtinction),
+        /*y:*/ -(-/*lumExtinction*/redExtinction - 5 * Math.log10(distance * 1000) + 5),//5
+    ]// redExtinction == lumExtinction bc they're the same filter. The redExtinction in the y should techincally be lumExtinction tho.
+    // for more info, see https://github.com/SkynetRTN/astromancer/blob/8179fe905d266691d838926e70bf41d24b2b1581/src/app/tools/cluster/cluster.util.ts#L194
+}
+
+function getExtinction(/*filter*/waveLength, reddening, rv=3.1) {
+    // const waveLength = filterWavelength[filter];
+    const x = (waveLength / 1) ** -1;
+    const y = x - 1.82;
+    let a = 0;
+    let b = 0;
+    if (x > 0.3 && x < 1.1) {
+      a = 0.574 * x ** 1.61;
+    } else if (x > 1.1 && x < 3.3) {
+      a =
+        1 +
+        0.17699 * y -
+        0.50447 * y ** 2 -
+        0.02427 * y ** 3 +
+        0.72085 * y ** 4 +
+        0.01979 * y ** 5 -
+        0.7753 * y ** 6 +
+        0.32999 * y ** 7;
+    }
+  
+    if (x > 0.3 && x < 1.1) {
+      b = -0.527 * x ** 1.61;
+    } else if (x > 1.1 && x < 3.3) {
+      b =
+        1.41338 * y +
+        2.28305 * y ** 2 +
+        1.07233 * y ** 3 -
+        5.38434 * y ** 4 -
+        0.62251 * y ** 5 +
+        5.3026 * y ** 6 -
+        2.09002 * y ** 7;
+    }
+  
+    return 3.1 * reddening * (a + b / rv);
 }
