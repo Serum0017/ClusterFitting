@@ -1,3 +1,8 @@
+NEW INSTRUCTIONS:
+Clone the repo. Open https://github.com/Serum0017/ClusterFitting and click the buttons. You might want to install github desktop first, and then just follow the instructions in the app.
+Open devIndex.html in the browser. You can do this by opening the file in vscode and right clicking devIndex.html and selecting "copy path" and pasting that path in the browser. The path for me is C:\Users\JoeIn\OneDrive\Documents\GitHub\ClusterFitting\clusterLocationIdentifier\devIndex.html
+
+OLD STUFF (if you want to run the node.js)
 here's instructions explaining how to run & edit these files!
 
 1. Install node.js, npm, and python (oh, and the astropy package)
@@ -15,7 +20,3 @@ here's instructions explaining how to run & edit these files!
 5. ctrl c to stop execution. To edit the code, open up the file in vscode or some other IDE, change the text, and then save. Once saved, restart the program by ctrl c'ing in the command prompt and then typing npm start
 6. Once you have some progress that you'd like to save and share with the team, go to github desktop and commit your changes (bottom left corner).
     - You should see the changes in ghd, too, so if you don't, that's a sign that you probably edited the wrong directory or didn't save your changes.
-
-NEW INSTRUCTIONS:
-run index.html in the browser.
-If you want to plot a different cluster, change the name in getGaiaData.py to the cluster name you want and then follow the above instructions to run index.js with npm
