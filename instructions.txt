@@ -1,5 +1,5 @@
 NEW INSTRUCTIONS:
-Clone the repo. Open https://github.com/Serum0017/ClusterFitting and click the buttons. You might want to install github desktop first, and then just follow the instructions in the app.
+Clone the repo. Open https://github.com/Serum0017/ClusterFitting and click the buttons. You might want to install github desktop first, and then just follow the instructions in the app. When it asks for a branch, instead of main, pick Isochrone-fitting!!! Do not clone main! Clone the isochrone-fitting branch!!
 Open devIndex.html in the browser. You can do this by opening the file in vscode and right clicking devIndex.html and selecting "copy path" and pasting that path in the browser. The path for me is C:\Users\JoeIn\OneDrive\Documents\GitHub\ClusterFitting\clusterLocationIdentifier\devIndex.html
 
 OLD STUFF (if you want to run the node.js)
