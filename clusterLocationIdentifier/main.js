@@ -45,8 +45,10 @@ function renderPoints(){
     ptx.fillRect(0,0,canvas.width,canvas.height);
 
     ptx.globalAlpha = 1//0.04;//0.01//0.04;
-    ptx.fillStyle = '#006db7';
+    // ptx.fillStyle = '#006db7';
     for(let i = 0; i < points.length; i++){
+        if(points[i].emphasis !== 1) ptx.fillStyle = 'red';
+        else ptx.fillStyle = '#006db7';
         ptx.beginPath();
         ptx.arc(XToScreen(points[i].x) + canvas.width / 2, YToScreen(points[i].y) + canvas.height / 2, 8/*6*//*18*/, 0, Math.PI * 2);
         ptx.fill();
@@ -175,11 +177,26 @@ renderPoints();
 
 let running = true;
 
+// function run(){
+//     if(running === false) return;
+//     GA.runGeneration();
+//     // render();
+//     run();
+//     // requestAnimationFrame(run);
+// }
+
+// run();
+let tick = 0;
 function run(){
-    if(running === false) return;
-    GA.runGeneration();
-    render();
-    requestAnimationFrame(run);
+    while(true){
+        if(running === false) return;
+        GA.runGeneration();
+        if(tick++ % 1000 === 0){
+            render();
+            requestAnimationFrame(run);
+            return;
+        }
+    }
 }
 
 run();
@@ -196,6 +213,7 @@ window.onmousedown = (e) => {
         return e.preventDefault();
     }
     running = !running;
+    render();
     if(running === true){
         run();
     } else {

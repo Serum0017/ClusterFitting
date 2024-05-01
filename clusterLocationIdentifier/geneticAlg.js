@@ -77,10 +77,11 @@ class GeneticAlgorithmn {
     constructor(points=[{x:0,y:0}]){
         this.points = points;
 
-        this.spatialHash = new SpatialHash();
+        this.spatialHash = new SpatialHash(true);
         for(let i = 0; i < this.points.length; i++){
-            this.spatialHash.addPt(this.points[i].x, this.points[i].y);
+            this.spatialHash.addKeyedPt(this.points[i]);
         }
+        // console.log(structuredClone(this.spatialHash.positions));
 
         // a - purple, b - red
         this.population = new Array(SETTINGS.populationSize);
@@ -92,7 +93,7 @@ class GeneticAlgorithmn {
     }
     runGeneration(){
         for(let i = 0; i < this.population.length; i++){
-            this.population[i].fitness = this.population[i].calculateFitness(this.spatialHash);
+            this.population[i].fitness = this.population[i].calculateFitness(this.spatialHash, this.points);
         }
 
         // sort in decending order based on fitness
@@ -124,10 +125,10 @@ class GeneticAlgorithmn {
     getBestData(){
         const p = this.population;
 
-        let bestFitness = -1;
+        let bestFitness = -Infinity;
         let bestIndex = null;
         for(let i = 0; i < p.length; i++){
-            if(p[i].fitness === undefined) p[i].fitness = p[i].calculateFitness(this.spatialHash);
+            if(p[i].fitness === undefined) p[i].fitness = p[i].calculateFitness(this.spatialHash, this.points);
             if(p[i].fitness > bestFitness){
                 bestFitness = p[i].fitness;
                 bestIndex = i;
@@ -220,17 +221,62 @@ class Guess {
             // console.log({choices, age: this.logAge, mtl: this.metallicity, pts: this.points});
         }
     }
-    calculateFitness(spatialHash) {
-        let fitness = 0;
-        for(let i = 0; i < this.points.length; i++){
-            fitness += spatialHash.getNumberOfClose(this.points[i][0], this.points[i][1]/*, SETTINGS.spatialHashQueryDist*/) ** SETTINGS.evennessValuePower / (this.densities[i] /*** SETTINGS.densityEmphasisPower*/);// big emphasis on small density bc we want the isochrone to 100% find the smallest region
+    calculateFitness(spatialHash, points) {
+        // TODO: densities?
+        // let minDistSqs = new Array(points.length).fill(Infinity);
+        // for(let i = 0; i < this.points.length; i++){
+        //     const pts = spatialHash.getEntitiesInRadius(this.points[i][0], this.points[i][1], 1);
+        //     // if(Math.random() < 0.01) console.log(pts);
+        //     for(let j = 0; j < pts.length; j++){
+        //         const distSq = (this.points[j][0] - pts[j].x) ** 2 + (this.points[j][1] - pts[j].y) ** 2;
+        //         if(distSq < minDistSqs[pts[j].ind]) minDistSqs[pts[j].ind] = distSq;
+        //     }
+        // }
+
+        // // if(Math.random() < 0.01) console.log(minDistSqs);
+        
+        // let totalDist = 0;
+        // for(let i = 0; i < points.length; i++){
+        //     if(minDistSqs[i] !== Infinity){
+        //         totalDist += minDistSqs[i];
+        //         continue;
+        //     }
+
+        //     // very far away point. Spatial hash will be inefficient at detecting it, so just brute force
+        //     let minDist = Infinity;
+        //     for(let j = 0; j < this.points.length; j++){
+        //         const distSq = (this.points[j][0] - points[i].x) ** 2 + (this.points[j][1] - points[i].y) ** 2;
+        //         if(distSq < minDist) minDist = distSq;
+        //     }
+        //     totalDist += minDist;
+        // }
+
+        // if(Math.random() < 0.01)console.log(totalDist, minDistSqs);
+
+        // return -totalDist;
+
+        // Old: fitness is just the negative of the distance of every point to the closest neighbor
+        let totalDist = 0;
+        for(let i = 0; i < points.length; i++){
+            let minDist = Infinity;
+            for(let j = 0; j < this.points.length; j++){
+                const distSq = (this.points[j][0] - points[i].x) ** 2 + (this.points[j][1] - points[i].y) ** 2;
+                if(distSq < minDist) minDist = distSq;
+            }
+            totalDist += minDist / this.densities[i] * points[i].emphasis;
         }
-        return fitness // / this.points.length;
+        return -totalDist;
+
+        // VERY OLD
+
+        // let fitness = 0;
+        // for(let i = 0; i < this.points.length; i++){
+        //     fitness += spatialHash.getNumberOfClose(this.points[i][0], this.points[i][1]/*, SETTINGS.spatialHashQueryDist*/) ** SETTINGS.evennessValuePower / (this.densities[i] /*** SETTINGS.densityEmphasisPower*/);// big emphasis on small density bc we want the isochrone to 100% find the smallest region
+        // }
+        // return fitness // / this.points.length;
         // mean squared regression for now, obviously we dont want to fit all stars equally so TODO actually implement isochrone-specific stuff
 
-        // TODO: Spatial hash!
-
-
+        // EVEN OLDER
 
         // let totalDist = 0;
 
@@ -388,7 +434,7 @@ function getShift(reddening/*E(B-V)*/, distance) {
     // const lumExtinction = getExtinction("RP", reddening);
     return [
         /*x:*/ -(redExtinction - blueExtinction),
-        /*y:*/ -(-/*lumExtinction*/redExtinction - 5 * Math.log10(distance * 1000) + 5),//5
+        /*y:*/ -(-/*lumExtinction*/redExtinction - 5 * Math.log10(distance * 1000) + 5)
     ]// redExtinction == lumExtinction bc they're the same filter. The redExtinction in the y should techincally be lumExtinction tho.
     // for more info, see https://github.com/SkynetRTN/astromancer/blob/8179fe905d266691d838926e70bf41d24b2b1581/src/app/tools/cluster/cluster.util.ts#L194
 }

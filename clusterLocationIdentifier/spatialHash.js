@@ -11,18 +11,31 @@ const halfHashDistanceY = hashDistanceY / 2;
 let x = 0, y = 0;
 class SpatialHash {
     // REAL
-    constructor(){
+    constructor(keyed=false){
         // positions: { x: {y: [stars at this hash] } }
         this.positions = [...Array(positionsLenX)].map(_ => [...Array(positionsLenY)]);
-        for(x in this.positions){
-            for(y in this.positions){
-                this.positions[x][y] = 0;
+        if(keyed === true){
+            for(x in this.positions){
+                for(y in this.positions){
+                    this.positions[x][y] = [];
+                }
+            }
+        } else {
+            for(x in this.positions){
+                for(y in this.positions){
+                    this.positions[x][y] = 0;
+                }
             }
         }
+        
         this.hashId = 0;
     }
     addPt(x, y){
         this.positions[Math.min(positionsLenX-1,Math.max(0,Math.floor((x - minX) / hashDistanceX)))][Math.min(positionsLenY-1,Math.max(0,Math.floor((y - minY) / hashDistanceY)))]++;
+    }
+    addKeyedPt(pt){
+        const {x,y} = pt;
+        this.positions[Math.min(positionsLenX-1,Math.max(0,Math.floor((x - minX) / hashDistanceX)))][Math.min(positionsLenY-1,Math.max(0,Math.floor((y - minY) / hashDistanceY)))].push(pt);
     }
     getNumberOfClose(x,y){
         // try{
@@ -32,6 +45,22 @@ class SpatialHash {
         //     return 0;
         // }
         return this.positions[Math.max(0,Math.min(positionsLenX-1,Math.floor((x - minX) / hashDistanceX)))][Math.max(0,Math.min(positionsLenY-1,Math.floor((y - minY) / hashDistanceY)))];
+    }
+    getEntitiesInRadius(x,y,radius=1){
+        let ps = new Set();
+        const posX = Math.floor((x - minX) / hashDistanceX);
+        const posY = Math.floor((y - minY) / hashDistanceY);
+
+        for(let x = Math.max(0, posX - radius); x <= Math.min(this.positions.length, posX + radius); x++){
+            for(let y = Math.max(0, posY - radius); y <= Math.min(this.positions[0].length, posY + radius); y++){
+                if(this.positions[x] === undefined || this.positions[x][y] === undefined) continue;
+                for(let i = 0; i < this.positions[x][y].length; i++){
+                    ps.add(this.positions[x][y][i]);
+                }
+            }
+        }
+        
+        return Array.from(ps);
     }
     getNumberInRadius(x,y,radius=3){// square radius
         let ps = 0;
@@ -89,20 +118,21 @@ class SpatialHash {
         // }
         // ptx.globalAlpha = 1;
 
-        let alreadyDrawn = {};
-        ctx.globalAlpha = 0.1;
-        ctx.fillStyle = 'green';
-        for(let i = 0; i < pts.length; i++){
-            const x = Math.min(positionsLenX-1,Math.max(0,Math.floor((pts[i][0] - minX) / hashDistanceX) * hashDistanceX + minX))
-            const y = Math.min(positionsLenY-1,Math.max(0,Math.floor((pts[i][1] - minY) / hashDistanceY) * hashDistanceY + minY));
-            if(alreadyDrawn[x] !== undefined && alreadyDrawn[x][y] !== undefined) continue;
-            if(alreadyDrawn[x] === undefined) alreadyDrawn[x] = {};
-            alreadyDrawn[x][y] = true;
-            ctx.beginPath();
-            ctx.rect(XToScreen(x - cellSize.x/2) + canvas.width / 2, YToScreen(y - cellSize.x/2) + canvas.height / 2, XToMag(cellSize.x), YToMag(cellSize.y));
-            ctx.fill();
-            ctx.closePath();
-        }
+        // SEMIOLD (was uncommented before fitness function splitup -- rest was not)
+        // let alreadyDrawn = {};
+        // ctx.globalAlpha = 0.1;
+        // ctx.fillStyle = 'green';
+        // for(let i = 0; i < pts.length; i++){
+        //     const x = Math.min(positionsLenX-1,Math.max(0,Math.floor((pts[i][0] - minX) / hashDistanceX) * hashDistanceX + minX))
+        //     const y = Math.min(positionsLenY-1,Math.max(0,Math.floor((pts[i][1] - minY) / hashDistanceY) * hashDistanceY + minY));
+        //     if(alreadyDrawn[x] !== undefined && alreadyDrawn[x][y] !== undefined) continue;
+        //     if(alreadyDrawn[x] === undefined) alreadyDrawn[x] = {};
+        //     alreadyDrawn[x][y] = true;
+        //     ctx.beginPath();
+        //     ctx.rect(XToScreen(x - cellSize.x/2) + canvas.width / 2, YToScreen(y - cellSize.x/2) + canvas.height / 2, XToMag(cellSize.x), YToMag(cellSize.y));
+        //     ctx.fill();
+        //     ctx.closePath();
+        // }
 
         ctx.globalAlpha = 0.3;
         let lastLineWidth = ctx.lineWidth;
