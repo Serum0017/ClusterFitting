@@ -137,7 +137,9 @@ class GeneticAlgorithmn {
 
         const bestAgent = p[bestIndex];
 
-        this.spatialHash.renderCellsWith(bestAgent.points);
+        if(bestIndex !== null){
+            this.spatialHash.renderCellsWith(bestAgent.points);
+        }
 
         const fitnessIncreaseRatioSinceLastTime = bestFitness / this.lastBestFitness;
         this.lastBestFitness = bestFitness;
@@ -205,21 +207,34 @@ class Guess {
 
         // console.log(Math.round(this.logAge * 10) / 10, Math.round(this.metallicity) / 10);
 
-        const result = generateIsochrone(this.distance, Math.round(this.logAge * 20) / 20, Math.round(this.metallicity * 20) / 20, this["E(B-V)"]);
-        this.points = result[0];
-        this.densities = result[1];
+        /*const result =*/
+        this.points = generateIsochrone(this.distance, Math.round(this.logAge * 20) / 20, Math.round(this.metallicity * 20) / 20, this["E(B-V)"]);
 
         // console.log(this.densities);
 
         // regenerate isochrone if the points dont exist
-        if(this.points.length === 0){
-            const choices = Object.keys(isochroneData[Math.round(this.logAge * 20) / 20]);
-            this.metallicity = parseFloat(choices[Math.floor(Math.random() * choices.length)]);
-            const result = generateIsochrone(this.distance, Math.round(this.logAge * 20) / 20, Math.round(this.metallicity * 20) / 20, this["E(B-V)"]);
-            this.points = result[0];
-            this.densities = result[1];
-            // console.log({choices, age: this.logAge, mtl: this.metallicity, pts: this.points});
+        // if(this.points.length === 0){
+        //     console.log('xd');
+        //     const choices = Object.keys(isochroneData[Math.round(this.logAge * 20) / 20]);
+        //     this.metallicity = parseFloat(choices[Math.floor(Math.random() * choices.length)]);
+        //     this.points = generateIsochrone(this.distance, Math.round(this.logAge * 20) / 20, Math.round(this.metallicity * 20) / 20, this["E(B-V)"]);
+        //     // console.log({choices, age: this.logAge, mtl: this.metallicity, pts: this.points});
+        // }
+
+        // generate densities
+
+        let prevDist = Math.sqrt((this.points[0][0] - this.points[1][0]) ** 2 + (this.points[0][1] - this.points[1][1]) ** 2);
+        this.densities = [];
+        for(let i = 1; i < this.points.length-1; i++){
+            // const prev = this.points[i-1];
+            const next = this.points[i+1];
+            const cur = this.points[i];
+            const nextDist = Math.sqrt((next[0] - cur[0]) ** 2 + (next[1] - cur[1]) ** 2);
+            this.densities[i] = prevDist + nextDist;
+            prevDist = nextDist;
         }
+        this.densities[0] = this.densities[1];
+        this.densities[this.points.length-1] = this.densities[this.points.length-2];
     }
     calculateFitness(spatialHash, points) {
         // TODO: densities?
@@ -256,14 +271,37 @@ class Guess {
         // return -totalDist;
 
         // Old: fitness is just the negative of the distance of every point to the closest neighbor
-        let totalDist = 0;
+        let totalDist = 0, t, dx, dy, nearestX, nearestY, distSq;
         for(let i = 0; i < points.length; i++){
             let minDist = Infinity;
-            for(let j = 0; j < this.points.length; j++){
-                const distSq = (this.points[j][0] - points[i].x) ** 2 + (this.points[j][1] - points[i].y) ** 2;
+            for(let j = 0; j < this.points.length-1; j++){
+                // we consider points 2 at a time, i and i+1. This is why we stop the loop 1 short
+
+                // const distSq = (this.points[j][0] - points[i].x) ** 2 + (this.points[j][1] - points[i].y) ** 2;
+                dx = this.points[j+1][0] - this.points[j][0];
+                dy = this.points[j+1][1] - this.points[j][1];
+
+                // optimization to avoid computing sqrts
+                if(Math.abs(dx) > minDist || Math.abs(dy) > minDist) continue;
+
+                t = ((this.points[j][0] - points[i].x) * dx + (this.points[j][1] - points[i].y) * dy) / (dx*dx + dy*dy);
+
+                if(t < 0){
+                    nearestX = this.points[j][0];
+                    nearestY = this.points[j][1];
+                } else if(t > 1){
+                    nearestX = this.points[j+1][0];
+                    nearestY = this.points[j+1][1];
+                } else {
+                    nearestX = this.points[j][0] + t * dx;
+                    nearestY = this.points[j][0] + t * dy;
+                }
+
+                distSq = (points[i].x - nearestX) * (points[i].x - nearestX) + (points[i].y - nearestY) * (points[i].y - nearestY);
+
                 if(distSq < minDist) minDist = distSq;
             }
-            totalDist += minDist / this.densities[i] * points[i].emphasis;
+            totalDist += minDist / this.densities[i];
         }
         return -totalDist;
 
@@ -295,6 +333,29 @@ class Guess {
         // // big totalDist = bad
         // return -totalDist;
     }
+    // pointToSegmentDistanceSquared(px, py, x1, y1, x2, y2){
+    //     let dx = x2 - x1;
+    //     let dy = y2 - y1;
+
+    //     if(dx === 0 && dy === 0) return (px - x1) ** 2 + (py - y1) ** 2;
+
+    //     let t = ((px - x1) * dx + (py - y1) * dy) / (dx**2 + dy**2);
+
+    //     let nearestX;
+    //     let nearestY;
+    //     if(t < 0){
+    //         nearestX = x1;
+    //         nearestY = y1;
+    //     } else if(t > 1){
+    //         nearestX = x2;
+    //         nearestY = y2;
+    //     } else {
+    //         nearestX = x1 + t * dx;
+    //         nearestY = y1 + t * dy;
+    //     }
+
+    //     return (px - nearestX) ** 2 + (py - nearestY) ** 2;
+    // }
 }
 
 function interpolate(a0, a1, t){
@@ -317,48 +378,48 @@ function generateIsochrone(distance, logAge, metallicity, EBV) {
 
     const [shiftX, shiftY] = getShift(EBV, distance);
     // let [shiftX, shiftY] = getShift(EBV, distance);
-    return [d.map(p => { return [p[0] + shiftX, p[1] + shiftY] }), generatePointDensity(d, logAge, metallicity)];
+    return /*[*/d.map(p => { return [p[0] + shiftX, p[1] + shiftY] })/*, generatePointDensity(d, logAge, metallicity)]*/;
 }
 
-let pointDensityCache = {};
-function generatePointDensity(points, la, me){
-    // let density = [0];
-    // for(let i = 1; i < points.length-1; i++){
-    //     const p = points[i];
-    //     const prev = points[i-1];
-    //     const next = points[i+1];
+// let pointDensityCache = {};
+// function generatePointDensity(points, la, me){
+//     // let density = [0];
+//     // for(let i = 1; i < points.length-1; i++){
+//     //     const p = points[i];
+//     //     const prev = points[i-1];
+//     //     const next = points[i+1];
 
-    //     const prevDistSq = (prev[0] - p[0]) ** 2 + (prev[1] - p[1]) ** 2;
-    //     const nextDistSq = (next[0] - p[0]) ** 2 + (next[1] - p[1]) ** 2;
-    // }
+//     //     const prevDistSq = (prev[0] - p[0]) ** 2 + (prev[1] - p[1]) ** 2;
+//     //     const nextDistSq = (next[0] - p[0]) ** 2 + (next[1] - p[1]) ** 2;
+//     // }
 
-    if(pointDensityCache[la] !== undefined && pointDensityCache[la][me] !== undefined) return pointDensityCache[la][me];
-    let spHash = new SpatialHash();
+//     if(pointDensityCache[la] !== undefined && pointDensityCache[la][me] !== undefined) return pointDensityCache[la][me];
+//     let spHash = new SpatialHash();
 
-    // align to the minimum of the spatial hash grid
-    let minPtX = Infinity;
-    let minPtY = Infinity;
-    for(let i = 0; i < points.length; i++){
-        if(points[i][0] < minPtX) minPtX = points[i][0];
-        if(points[i][1] < minPtY) minPtY = points[i][1];
-    }
-    const difX = minX - minPtX;
-    const difY = minY - minPtY;
-    let newPts = points.map(p => {return [p[0] + difX, p[1] + difY]});
-    for(let i = 0; i < newPts.length; i++){
-        spHash.addPt(newPts[i][0], newPts[i][1]);
-    }
+//     // align to the minimum of the spatial hash grid
+//     let minPtX = Infinity;
+//     let minPtY = Infinity;
+//     for(let i = 0; i < points.length; i++){
+//         if(points[i][0] < minPtX) minPtX = points[i][0];
+//         if(points[i][1] < minPtY) minPtY = points[i][1];
+//     }
+//     const difX = minX - minPtX;
+//     const difY = minY - minPtY;
+//     let newPts = points.map(p => {return [p[0] + difX, p[1] + difY]});
+//     for(let i = 0; i < newPts.length; i++){
+//         spHash.addPt(newPts[i][0], newPts[i][1]);
+//     }
     
-    // calculate densities as the amount of pts in the spatial hash cell. This isn't perfect but it doesn't need to be.
-    let densities = [];
-    for(let i = 0; i < newPts.length; i++){
-        densities[i] = spHash.getNumberInRadius(newPts[i][0], newPts[i][1], 2) + 1;
-    }
+//     // calculate densities as the amount of pts in the spatial hash cell. This isn't perfect but it doesn't need to be.
+//     let densities = [];
+//     for(let i = 0; i < newPts.length; i++){
+//         densities[i] = spHash.getNumberInRadius(newPts[i][0], newPts[i][1], 2) + 1;
+//     }
 
-    if(pointDensityCache[la] === undefined) pointDensityCache[la] = {};
-    pointDensityCache[la][me] = densities;
-    return densities;
-}
+//     if(pointDensityCache[la] === undefined) pointDensityCache[la] = {};
+//     pointDensityCache[la][me] = densities;
+//     return densities;
+// }
 
 // scrapped because we can just use the isochrone's bounding box 
 

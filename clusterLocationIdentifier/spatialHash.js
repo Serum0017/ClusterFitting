@@ -107,10 +107,11 @@ class SpatialHash {
 
         // ptx.fillStyle = 'green';
         // ptx.globalAlpha = 0.1;
-        const cellSize = {
-            x: (maxX - minX) / this.positions.length,
-            y: (maxY - minY) / this.positions.length
-        };
+        // Uncomment this const if semiold is also uncommented
+        // const cellSize = {
+        //     x: (maxX - minX) / this.positions.length,
+        //     y: (maxY - minY) / this.positions.length
+        // };
         // for(let x in uniqueCells){
         //     for(let y in uniqueCells[x]){
         //         ptx.fillRect(XToScreen(x-cellSize.x/2) + canvas.width / 2,YToScreen(y-cellSize.y/2) + canvas.height / 2,XToMag(cellSize.x),YToMag(cellSize.y))

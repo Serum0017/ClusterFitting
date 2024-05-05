@@ -45,10 +45,10 @@ function renderPoints(){
     ptx.fillRect(0,0,canvas.width,canvas.height);
 
     ptx.globalAlpha = 1//0.04;//0.01//0.04;
-    // ptx.fillStyle = '#006db7';
+    ptx.fillStyle = '#006db7';
     for(let i = 0; i < points.length; i++){
-        if(points[i].emphasis !== 1) ptx.fillStyle = 'red';
-        else ptx.fillStyle = '#006db7';
+        // if(points[i].emphasis !== 1) ptx.fillStyle = 'red';
+        // else ptx.fillStyle = '#006db7';
         ptx.beginPath();
         ptx.arc(XToScreen(points[i].x) + canvas.width / 2, YToScreen(points[i].y) + canvas.height / 2, 8/*6*//*18*/, 0, Math.PI * 2);
         ptx.fill();
@@ -185,12 +185,34 @@ let running = true;
 //     // requestAnimationFrame(run);
 // }
 
-// run();
+// greatest of all time!!
+let GOAT = undefined;
+let greatestFitness = -Infinity;
+let timesRan = 0;
+
 let tick = 0;
 function run(){
     while(true){
         if(running === false) return;
         GA.runGeneration();
+
+        if(tick % 8000 === 0 && tick !== 0){
+            const bestData = GA.getBestData();
+            const fitness = bestData.bestAgent.fitness;
+            timesRan++;
+            console.log(timesRan);
+            if(fitness > greatestFitness){
+                greatestFitness = fitness;
+                GOAT = bestData.bestAgent;
+                console.log({GOAT});
+            }
+            GA = new GeneticAlgorithmn(points);
+            decay = 1;
+            tick = 0;
+            requestAnimationFrame(run);
+            return;
+        }
+
         if(tick++ % 1000 === 0){
             render();
             requestAnimationFrame(run);
