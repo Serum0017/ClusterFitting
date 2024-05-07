@@ -9,28 +9,28 @@ const SETTINGS = Object.freeze({
     distance: {
         min: 0.22,
         max: 1.18,
-        changeRate: 1,
+        changeRate: 0.96,
     },
 
     // years
     logAge: {
         min: 6.6,
-        max: 10.15,//10.2,
-        changeRate: 2
+        max: 10.15,
+        changeRate: 3.55
     },
 
     // solar units
     metallicity: {
         min: -2.15,
         max: 0.55,
-        changeRate: 2,
+        changeRate: 2.7,
     },
 
     // unitless
     "E(B-V)": {
         min: 0,
         max: 1,
-        changeRate: 0.9
+        changeRate: 1
     },
 
     bigJumpMult: 10,
@@ -165,17 +165,17 @@ class Guess {
         this.points = generateIsochrone(this.distance, Math.round(this.logAge * 20) / 20, Math.round(this.metallicity * 20) / 20, this["E(B-V)"]);
 
         // generate densities
-        let prevDist = Math.sqrt((this.points[0][0] - this.points[1][0]) ** 2 + (this.points[0][1] - this.points[1][1]) ** 2);
-        this.densities = [];
-        for(let i = 1; i < this.points.length-1; i++){
-            const next = this.points[i+1];
-            const cur = this.points[i];
-            const nextDist = Math.sqrt((next[0] - cur[0]) ** 2 + (next[1] - cur[1]) ** 2);
-            this.densities[i] = prevDist + nextDist;
-            prevDist = nextDist;
-        }
-        this.densities[0] = this.densities[1];
-        this.densities[this.points.length-1] = this.densities[this.points.length-2];
+        // let prevDist = Math.sqrt((this.points[0][0] - this.points[1][0]) ** 2 + (this.points[0][1] - this.points[1][1]) ** 2);
+        // this.densities = [];
+        // for(let i = 1; i < this.points.length-1; i++){
+        //     const next = this.points[i+1];
+        //     const cur = this.points[i];
+        //     const nextDist = Math.sqrt((next[0] - cur[0]) ** 2 + (next[1] - cur[1]) ** 2);
+        //     this.densities[i] = prevDist + nextDist;
+        //     prevDist = nextDist;
+        // }
+        // this.densities[0] = this.densities[1];
+        // this.densities[this.points.length-1] = this.densities[this.points.length-2];
     }
     calculateFitness(points) {
         let totalDist = 0, t, dx, dy, nearestX, nearestY, distSq;
@@ -209,7 +209,7 @@ class Guess {
 
                 if(distSq < minDist) minDist = distSq;
             }
-            totalDist += minDist / this.densities[i];
+            totalDist += minDist // / this.densities[i];
         }
         return -totalDist;
     }
@@ -244,11 +244,11 @@ function getExtinction(waveLength, reddening, rv=3.1) {
     const y = x - 1.82;
     let a = 0;
     let b = 0;
-    if (x > 0.3 && x < 1.1) {
+    if (x > 0.3 && x < 1.1) {// [0.3, 1.1] a
       a = 0.574 * x ** 1.61;
-    } else if (x > 1.1 && x < 3.3) {
-      a =
-        1 +
+      b = -0.527 * x ** 1.61;
+    } else if (x > 1.1 && x < 3.3) { // [1.1, 3.3] a
+        a = 1 +
         0.17699 * y -
         0.50447 * y ** 2 -
         0.02427 * y ** 3 +
@@ -256,13 +256,7 @@ function getExtinction(waveLength, reddening, rv=3.1) {
         0.01979 * y ** 5 -
         0.7753 * y ** 6 +
         0.32999 * y ** 7;
-    }
-  
-    if (x > 0.3 && x < 1.1) {
-      b = -0.527 * x ** 1.61;
-    } else if (x > 1.1 && x < 3.3) {
-      b =
-        1.41338 * y +
+        b = 1.41338 * y +
         2.28305 * y ** 2 +
         1.07233 * y ** 3 -
         5.38434 * y ** 4 -
@@ -270,6 +264,5 @@ function getExtinction(waveLength, reddening, rv=3.1) {
         5.3026 * y ** 6 -
         2.09002 * y ** 7;
     }
-  
     return 3.1 * reddening * (a + b / rv);
 }

@@ -109,7 +109,7 @@ function render(){
     ctx.clearRect(0,0,canvas.width, canvas.height);
     
     ctx.lineWidth = 2;
-    ctx.globalAlpha = 0.6;
+    // ctx.globalAlpha = 0.6;
     ctx.strokeStyle = '#fb9e9e';
 
     ctx.translate(canvas.width / 2, canvas.height / 2);
@@ -118,7 +118,13 @@ function render(){
         ctx.beginPath();
         ctx.moveTo(XToScreen(p.points[0][0]), YToScreen(p.points[0][1]));
         for(let i = 1; i < p.points.length; i++){
-            ctx.lineTo(XToScreen(p.points[i][0]), YToScreen(p.points[i][1]));
+            ctx.lineTo(XToScreen(p.points[i][0]), YToScreen(p.points[i][1]));    
+            // point rendering
+            // ctx.beginPath();
+            // ctx.fillStyle = ctx.strokeStyle;
+            // ctx.arc(XToScreen(p.points[i][0]), YToScreen(p.points[i][1]), 4, 0, Math.PI * 2);
+            // ctx.fill();
+            // ctx.closePath();
         }
         ctx.stroke();
         ctx.closePath();
@@ -138,15 +144,14 @@ let running = true;
 // function run(){
 //     if(running === false) return;
 //     GA.runGeneration();
-//     // render();
-//     run();
-//     // requestAnimationFrame(run);
+//     render();
+//     requestAnimationFrame(run);
 // }
 
 // This, along with the commented code starting with if(tick % 8000 === 0 && tick !== 0) runs many trials and alerts the user when a new best one is found.
-// let GOAT = undefined;
-// let greatestFitness = -Infinity;
-// let timesRan = 0;
+let GOAT = undefined;
+let greatestFitness = -Infinity;
+let timesRan = 0;
 
 let tick = 0;
 function run(){
@@ -154,22 +159,22 @@ function run(){
         if(running === false) return;
         GA.runGeneration();
 
-        // if(tick % 8000 === 0 && tick !== 0){
-        //     const bestData = GA.getBestData();
-        //     const fitness = bestData.bestAgent.fitness;
-        //     timesRan++;
-        //     console.log(timesRan);
-        //     if(fitness > greatestFitness){
-        //         greatestFitness = fitness;
-        //         GOAT = bestData.bestAgent;
-        //         console.log({GOAT});
-        //     }
-        //     GA = new GeneticAlgorithmn(points);
-        //     decay = 1;
-        //     tick = 0;
-        //     requestAnimationFrame(run);
-        //     return;
-        // }
+        if(tick % 8000 === 0 && tick !== 0){
+            const bestData = GA.getBestData();
+            const fitness = bestData.bestAgent.fitness;
+            timesRan++;
+            console.log(timesRan);
+            if(fitness > greatestFitness){
+                greatestFitness = fitness;
+                GOAT = bestData.bestAgent;
+                console.log({GOAT});
+            }
+            GA = new GeneticAlgorithmn(points);
+            decay = 1;
+            tick = 0;
+            requestAnimationFrame(run);
+            return;
+        }
 
         if(tick++ % 1000 === 0){
             render();
