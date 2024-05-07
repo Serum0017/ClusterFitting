@@ -1,0 +1,3 @@
+1. go to gaiaData.js
+2. const importedData = [...paste data here];
+3. profit
