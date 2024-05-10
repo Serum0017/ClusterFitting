@@ -134,9 +134,105 @@ function render(){
     ctx.globalAlpha = 1;
 }
 
+function renderGraph(bestFitnesses=[]){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    // axes
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = 'black';
+    const linePadding = 90;
+    ctx.lineCap = 'square';
+
+    ctx.beginPath();
+    ctx.moveTo(linePadding, linePadding);
+    ctx.lineTo(linePadding, canvas.height - linePadding);
+    ctx.moveTo(linePadding, canvas.height - linePadding);
+    ctx.lineTo(canvas.width - linePadding, canvas.height - linePadding);
+    ctx.stroke();
+    ctx.closePath();
+
+    ctx.font = "26px Inter";
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'black';
+
+    const numBins = bestFitnesses.length - 1;
+
+    const axisSize = 80;
+
+    const GOAT = Math.max(...bestFitnesses);
+    const WOAT = Math.min(...bestFitnesses);
+
+    let i = 0;
+    for(let x = linePadding * 2; x <= canvas.width - linePadding; x += (canvas.width - linePadding * 3) / numBins){
+        ctx.beginPath();
+        ctx.moveTo(x, canvas.height - linePadding * 1.3);
+        ctx.lineTo(x, canvas.height - linePadding * 0.8);
+        ctx.stroke();
+        ctx.closePath();
+
+        ctx.fillText(i.toString(), x, canvas.height - linePadding * 0.4);
+        i++;
+    }
+
+    for(let y = canvas.height - linePadding; y >= linePadding * 1.1; y -= axisSize){
+        ctx.beginPath();
+        ctx.moveTo(linePadding * 1.3, y);
+        ctx.lineTo(linePadding * 0.8, y);
+        ctx.stroke();
+        ctx.closePath();
+
+        ctx.translate(linePadding * 0.4, y);
+        // ctx.rotate(Math.PI / 2);
+        ctx.fillText(interpolate(WOAT, GOAT, (y - linePadding*1.1) / (canvas.height - linePadding * 2.2)).toFixed(2), 0, 0);
+        // ctx.rotate(-Math.PI / 2);
+        ctx.translate(-linePadding * 0.4, -y);
+    }
+
+    i = 0;
+    ctx.fillStyle = 'blue';
+    ctx.beginPath();
+    const ratio0 = (bestFitnesses[0] - WOAT) / (GOAT - WOAT);
+    const y0 = linePadding * 1.1 + (1-ratio0) * (canvas.height - linePadding * 2.2);
+    ctx.moveTo(linePadding * 2, y0);
+    for(let x = linePadding * 2; x <= canvas.width - linePadding; x += (canvas.width - linePadding * 3) / numBins){
+        const fitness = bestFitnesses[i];
+        const ratio = (fitness - WOAT) / (GOAT - WOAT);
+        const y = linePadding * 1.1 + (1-ratio) * (canvas.height - linePadding * 2.2);
+        ctx.lineTo(x, y);
+        i++;
+    }
+    ctx.stroke();
+    ctx.closePath();
+
+    ctx.fillStyle = 'black';
+
+    ctx.translate(canvas.width - linePadding * 0.5, canvas.height - linePadding);
+    ctx.rotate(Math.PI / 2);
+    ctx.fillText('Trial #', 0, 0);
+    ctx.rotate(-Math.PI / 2);
+    ctx.translate(-(canvas.width - linePadding * 0.5), -(canvas.height - linePadding));
+
+    ctx.fillText('Max Fitness', linePadding, linePadding * 0.5);
+
+    // triangles
+    ctx.beginPath();
+    ctx.moveTo(canvas.width - linePadding * 0.8, canvas.height - linePadding);
+    ctx.lineTo(canvas.width - linePadding * 1, canvas.height - linePadding * 1.15);
+    ctx.lineTo(canvas.width - linePadding * 1, canvas.height - linePadding * 0.85);
+    ctx.fill();
+    ctx.closePath();
+
+    ctx.beginPath();
+    ctx.moveTo(linePadding, linePadding * 0.8);
+    ctx.lineTo(linePadding * 1.15, linePadding * 1);
+    ctx.lineTo(linePadding * 0.85, linePadding * 1);
+    ctx.fill();
+    ctx.closePath();
+}
+
 let GA = new GeneticAlgorithmn(points);
 
-renderPoints();
+// renderPoints();
 
 let running = true;
 
@@ -152,6 +248,7 @@ let running = true;
 let GOAT = undefined;
 let greatestFitness = -Infinity;
 let timesRan = 0;
+let bestFitnesses = [];
 
 let tick = 0;
 function run(){
@@ -172,12 +269,14 @@ function run(){
             GA = new GeneticAlgorithmn(points);
             decay = 1;
             tick = 0;
+            bestFitnesses.push(greatestFitness);
             requestAnimationFrame(run);
             return;
         }
 
         if(tick++ % 1000 === 0){
-            render();
+            // render();
+            renderGraph(bestFitnesses);
             requestAnimationFrame(run);
             return;
         }
