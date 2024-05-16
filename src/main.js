@@ -135,11 +135,12 @@ function render(){
 }
 
 function renderGraph(bestFitnesses=[]){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
     // axes
     ctx.lineWidth = 5;
     ctx.strokeStyle = 'black';
-    const linePadding = 90;
+    const linePadding = 160;//90
     ctx.lineCap = 'square';
 
     ctx.beginPath();
@@ -155,7 +156,7 @@ function renderGraph(bestFitnesses=[]){
     ctx.textBaseline = 'middle';
     ctx.fillStyle = 'black';
 
-    const numBins = bestFitnesses.length - 1;
+    const numBins = Math.max(1, bestFitnesses.length - 1);
 
     const axisSize = 80;
 
@@ -170,9 +171,12 @@ function renderGraph(bestFitnesses=[]){
         ctx.stroke();
         ctx.closePath();
 
-        ctx.fillText(i.toString(), x, canvas.height - linePadding * 0.4);
+        // only render every 4th label
+        if(i % 4 === 0) ctx.fillText(i.toString(), x, canvas.height - linePadding * 0.4);
         i++;
     }
+
+    ctx.font = "20px Inter";
 
     for(let y = canvas.height - linePadding; y >= linePadding * 1.1; y -= axisSize){
         ctx.beginPath();
@@ -183,21 +187,23 @@ function renderGraph(bestFitnesses=[]){
 
         ctx.translate(linePadding * 0.4, y);
         // ctx.rotate(Math.PI / 2);
-        ctx.fillText(interpolate(WOAT, GOAT, (y - linePadding*1.1) / (canvas.height - linePadding * 2.2)).toFixed(2), 0, 0);
+        ctx.fillText(interpolate(WOAT, GOAT, (y - linePadding*1.1) / (canvas.height - linePadding * 2.2)).toFixed(7), 0, 0);
         // ctx.rotate(-Math.PI / 2);
         ctx.translate(-linePadding * 0.4, -y);
     }
+
+    ctx.font = "26px Inter";
 
     i = 0;
     ctx.fillStyle = 'blue';
     ctx.beginPath();
     const ratio0 = (bestFitnesses[0] - WOAT) / (GOAT - WOAT);
-    const y0 = linePadding * 1.1 + (1-ratio0) * (canvas.height - linePadding * 2.2);
+    const y0 = linePadding * 1.1 + ratio0 * (canvas.height - linePadding * 2.2);
     ctx.moveTo(linePadding * 2, y0);
     for(let x = linePadding * 2; x <= canvas.width - linePadding; x += (canvas.width - linePadding * 3) / numBins){
         const fitness = bestFitnesses[i];
         const ratio = (fitness - WOAT) / (GOAT - WOAT);
-        const y = linePadding * 1.1 + (1-ratio) * (canvas.height - linePadding * 2.2);
+        const y = linePadding * 1.1 + ratio * (canvas.height - linePadding * 2.2);
         ctx.lineTo(x, y);
         i++;
     }
@@ -232,55 +238,63 @@ function renderGraph(bestFitnesses=[]){
 
 let GA = new GeneticAlgorithmn(points);
 
-// renderPoints();
-
 let running = true;
 
 // slow running loop. Great for visualizations
-// function run(){
-//     if(running === false) return;
-//     GA.runGeneration();
-//     render();
-//     requestAnimationFrame(run);
-// }
+function run(){
+    if(running === false) return;
+    GA.runGeneration();
+    render();
+    requestAnimationFrame(run);
+}
 
 // This, along with the commented code starting with if(tick % 8000 === 0 && tick !== 0) runs many trials and alerts the user when a new best one is found.
-let GOAT = undefined;
-let greatestFitness = -Infinity;
-let timesRan = 0;
-let bestFitnesses = [];
+// let GOAT = undefined;
+// let greatestFitness = -Infinity;
+// let timesRan = 0;
+// let bestFitnesses = [];
+let renderProgressGraph = false;
 
-let tick = 0;
-function run(){
-    while(true){
-        if(running === false) return;
-        GA.runGeneration();
+if(renderProgressGraph === false) renderPoints();
 
-        if(tick % 8000 === 0 && tick !== 0){
-            const bestData = GA.getBestData();
-            const fitness = bestData.bestAgent.fitness;
-            timesRan++;
-            console.log(timesRan);
-            if(fitness > greatestFitness){
-                greatestFitness = fitness;
-                GOAT = bestData.bestAgent;
-                console.log({GOAT});
-            }
-            GA = new GeneticAlgorithmn(points);
-            decay = 1;
-            tick = 0;
-            bestFitnesses.push(greatestFitness);
-            requestAnimationFrame(run);
-            return;
-        }
+// let tick = 0;
+// function run(){
+//     while(true){
+//         if(running === false) return;
+//         GA.runGeneration();
 
-        if(tick++ % 1000 === 0){
-            // render();
-            renderGraph(bestFitnesses);
-            requestAnimationFrame(run);
-            return;
-        }
-    }
+//         if(tick % 8000 === 0 && tick !== 0){
+//             const bestData = GA.getBestData();
+//             const fitness = bestData.bestAgent.fitness;
+//             timesRan++;
+//             console.log(timesRan);
+//             if(fitness > greatestFitness){
+//                 greatestFitness = fitness;
+//                 GOAT = bestData.bestAgent;
+//                 console.log({GOAT});
+//             }
+//             GA = new GeneticAlgorithmn(points);
+//             decay = 1;
+//             tick = 0;
+//             bestFitnesses.push(greatestFitness);
+//             requestAnimationFrame(run);
+//             return;
+//         }
+
+//         if(tick++ % 1000 === 0){
+//             if(renderProgressGraph) {renderGraph(bestFitnesses);}
+//             else {render();}
+//             requestAnimationFrame(run);
+//             return;
+//         }
+//     }
+// }
+
+window.switchRender = () => {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ptx.clearRect(0,0,canvas.width,canvas.height);
+    renderProgressGraph = !renderProgressGraph;
+    if(renderProgressGraph === false) renderPoints();
 }
 
 run();

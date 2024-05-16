@@ -35,7 +35,7 @@ function loadScripts(){
     loadScript(0);
 }
 
-const otherScriptNames = ['data/isochroneData', /*'data/dataPoints',*/ 'generateDimensions', 'geneticAlg', 'main'];
+const otherScriptNames = ['data/isochroneData', /*'data/dataPoints',*/ 'generateDimensions', 'spatialHash', 'geneticAlg', 'main'];
 function loadScript(scriptIndex){
     if(scriptIndex >= otherScriptNames.length) return;
     const scr = document.createElement('script');

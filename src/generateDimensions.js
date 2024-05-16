@@ -49,11 +49,3 @@ for(let i = 0; i < starPointData[0].length; i++){
     if(pt.y < minY) minY = pt.y;
     if(pt.y > maxY) maxY = pt.y;
 }
-
-// this just makes it look better because of the y axis. It has no significant effects aside from aesthetics.
-maxY *= 1.1;
-
-minX -= 2;
-maxX += 2;
-minY -= 2;
-maxY += 2;

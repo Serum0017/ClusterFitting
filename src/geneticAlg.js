@@ -164,6 +164,12 @@ class Guess {
 
         this.points = generateIsochrone(this.distance, Math.round(this.logAge * 20) / 20, Math.round(this.metallicity * 20) / 20, this["E(B-V)"]);
 
+        // this.spHash = new SpatialHash();
+        // // don't add the last point because we calculate the interpolated line from point j to j+1 so last point will be len-1, len but this.isochronePoints[len] == undefined
+        // for(let i = 0; i < this.points.length-1; i++){
+        //     this.spHash.add(i, this.points[i][0], this.points[i][1]);
+        // }
+
         // generate densities
         // let prevDist = Math.sqrt((this.points[0][0] - this.points[1][0]) ** 2 + (this.points[0][1] - this.points[1][1]) ** 2);
         // this.densities = [];
@@ -178,9 +184,54 @@ class Guess {
         // this.densities[this.points.length-1] = this.densities[this.points.length-2];
     }
     calculateFitness(points) {
-        let totalDist = 0, t, dx, dy, nearestX, nearestY, distSq;
+        let t, dx, dy, nearestX, nearestY, distSq, totalDist = 0;
         for(let i = 0; i < points.length; i++){
             let minDist = Infinity;
+
+            // // Spatial Hash Optimization
+            // const q = this.spHash.queryAdjacent(points[i].x, points[i].y);
+            // for(let m = 0; m < q.length; m++){
+            //     for(let k = 0; k < q[m].length; k++){
+            //         const j = q[m][k];
+
+            //         // we consider points 2 at a time, i and i+1. This is why we stop the loop 1 short
+            //         dx = this.points[j+1][0] - this.points[j][0];
+            //         dy = this.points[j+1][1] - this.points[j][1];
+
+            //         // optimization to avoid computing sqrts
+            //         if(Math.abs(dx) > minDist || Math.abs(dy) > minDist) continue;
+
+            //         t = ((this.points[j][0] - points[i].x) * dx + (this.points[j][1] - points[i].y) * dy) / (dx*dx + dy*dy);
+
+            //         if(t < 0){
+            //             nearestX = this.points[j][0];
+            //             nearestY = this.points[j][1];
+            //         } else if(t > 1){
+            //             nearestX = this.points[j+1][0];
+            //             nearestY = this.points[j+1][1];
+            //         } else {
+            //             nearestX = this.points[j][0] + t * dx;
+            //             nearestY = this.points[j][0] + t * dy;
+            //         }
+
+            //         // Crude approximation that does not interpolate the point on a line. Useful for getting a decent fit fast. 
+            //         // const distSq = (this.points[j][0] - points[i].x) ** 2 + (this.points[j][1] - points[i].y) ** 2;
+            //         distSq = (points[i].x - nearestX) * (points[i].x - nearestX) + (points[i].y - nearestY) * (points[i].y - nearestY);
+
+            //         if(distSq < minDist) minDist = distSq;
+            //     }
+            // }
+
+            // // because the spatial hash doesn't start at the exact center,
+            // // if we find a closest point that is in the sp hash but far away,
+            // // there's a potential for closer points. So, don't short circuit
+            // // and loop the hard way
+            // if(minDist < window.adjacentQueryErrorBound){
+            //     totalDist += minDist;
+            //     continue;
+            // }
+            // minDist = Infinity;
+
             for(let j = 0; j < this.points.length-1; j++){
                 // we consider points 2 at a time, i and i+1. This is why we stop the loop 1 short
                 dx = this.points[j+1][0] - this.points[j][0];
@@ -209,7 +260,7 @@ class Guess {
 
                 if(distSq < minDist) minDist = distSq;
             }
-            totalDist += minDist // / this.densities[i];
+            totalDist += minDist; // / this.densities[i];
         }
         return -totalDist;
     }
