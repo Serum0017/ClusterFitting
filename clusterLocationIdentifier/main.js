@@ -113,11 +113,11 @@ function renderPoints(){
 
     ptx.translate(canvas.width - linePadding * 0.5, canvas.height - linePadding);
     ptx.rotate(Math.PI / 2);
-    ptx.fillText('RA (mas/yr)', 0, 0);
+    ptx.fillText('PMRA (mas/yr)', 0, 0);
     ptx.rotate(-Math.PI / 2);
     ptx.translate(-(canvas.width - linePadding * 0.5), -(canvas.height - linePadding));
 
-    ptx.fillText('DEC (mas/yr)', linePadding, linePadding * 0.5);
+    ptx.fillText('PMDEC (mas/yr)', linePadding*1.1, linePadding * 0.5);
 
     // triangles
     ptx.beginPath();
@@ -138,8 +138,14 @@ function renderPoints(){
 function render(bestAgent=false){
     ctx.clearRect(0,0,canvas.width, canvas.height);
     
-    ctx.lineWidth = 2;
-    ctx.globalAlpha = 0.3;
+    if(bestAgent !== false){
+        ctx.lineWidth = 3;
+        ctx.globalAlpha = 1;
+    } else {
+        ctx.lineWidth = 2;
+        ctx.globalAlpha = 0.6; 
+    }
+    
     for(let i = 0; i < GA.populationA.length; i++){
         let p = GA.populationA[i];
         ctx.strokeStyle = '#ad9efb';
@@ -157,6 +163,8 @@ function render(bestAgent=false){
     }
 
     if(bestAgent !== false){
+        ctx.lineWidth = 3;
+        ctx.globalAlpha = 1;
         let p = bestAgent;
         ctx.strokeStyle = '#9efb9e';
         ctx.beginPath();
@@ -193,7 +201,8 @@ for(let i = 0; i < gaiaData[0].length; i++){
         x: gaiaData[0][i],
         y: gaiaData[1][i],
         col: gaiaData[2][i],
-        mag: gaiaData[3][i]
+        mag: gaiaData[3][i],
+        distance: 1 / (gaiaData[4][i]/1000)// Can be NaN! 1/arcseconds = distance
     });
     const pt = points[points.length-1];
     if(pt.x < minX) minX = pt.x;
@@ -218,14 +227,23 @@ renderPoints();
 
 let running = true;
 
+let runAnimationFrame = null;
 function run(){
     if(running === false) return;
     GA.runGeneration();
     render();
-    requestAnimationFrame(run);
+    runAnimationFrame = requestAnimationFrame(run);
 }
 
 run();
+
+window.runInstant = (num=1000) => {
+    cancelAnimationFrame(runAnimationFrame);
+    for(let i = 0; i < num; i++){
+        GA.runGeneration();
+    }
+    runAnimationFrame = requestAnimationFrame(run);
+}
 
 window.onmousedown = (e) => {
     // right click

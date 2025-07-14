@@ -57,7 +57,7 @@ WHERE
 
 # #   num_stars = len(filtered_df)
   # return [filtered_df['pmra'], filtered_df['pmdec'], [ra, dec]]
-  return [filtered_df['pmra'], filtered_df['pmdec'], filtered_df['bp_rp'], filtered_df['gmag'], [ra, dec]]
+  return [filtered_df['pmra'], filtered_df['pmdec'], filtered_df['bp_rp'], filtered_df['gmag'], filtered_df['parallax'], [ra, dec]]
   # return [df['ra'], df['dec'], [ra, dec]]
   # return [df['bp_rp'], df['gmag']]
 #   source = ColumnDataSource(filtered_df)

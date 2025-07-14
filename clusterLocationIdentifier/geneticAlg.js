@@ -21,10 +21,10 @@ const SETTINGS = Object.freeze({
 
     // how much density vs spread should be weighted. 1 = we only care about density, 10 = we care a lot more about the amount of points within
     purpleDensityValuePower: 3,//3,//0.1,//2,//1.8,
-    redDensityValuePower: 1,//2,//1.8,//1.5,//2,//1.3,
+    redDensityValuePower: 1.12,//1,//2,//1.8,//1.5,//2,//1.3,
 
     // exporting
-    clusterSizeAdd: 0.4//20
+    clusterSizeAdd: 0.3//20
 })
 let decay = 1;
 
